@@ -480,7 +480,7 @@ function tabS2() {
 
   <section class="card mb-4">
     <div class="eyebrow">STEP 3 · 역할별 예시 탐구 주제</div>
-    <h2>${m.role.icon} ${esc(m.group.groupName)}가 탐구할 수 있는 주제</h2>
+    <h2>${m.role.icon} ${esc(m.group.groupName)} 우리 조가 탐구할 수 있는 주제</h2>
     <p class="muted text-sm">같은 역할 4명이 공통의 관심사를 탐구해요. 예시 주제를 읽고 마음에 드는 주제를 <b>한 명당 하나</b> 추천하세요. 새로운 주제를 직접 제안해도 좋아요.</p>
     <label class="label mt-3" for="tp-reason">추천 이유 <span class="muted font-normal">(내 관심사·진로와 어떻게 연결되나요?)</span></label>
     <input id="tp-reason" class="input" maxlength="300" placeholder="예: 데이터 과학자가 꿈이라 알고리즘 편향에 관심이 있어요" value="${esc(m.topicPick?.reason || '')}">
