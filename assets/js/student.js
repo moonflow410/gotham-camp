@@ -11,7 +11,8 @@ const CRITERIA = [
 const TABS = [
   { id: 's1', n: 1, label: '1차시', sub: '브리핑 · 투표' },
   { id: 's2', n: 2, label: '2차시', sub: '관점 · 주제' },
-  { id: 's3', n: 3, label: '3차시', sub: '발표 · 평가' }
+  { id: 's3', n: 3, label: '3차시', sub: '발표 · 평가' },
+  { id: 'rec', n: 0, label: '✍️ 기록', sub: '나의 성찰' }
 ];
 
 const App = { state: null, me: null, cred: null, tab: null, picked: null, picks: {}, scores: {}, sig: '' };
@@ -51,7 +52,7 @@ async function poll() {
 }
 function settingsSig() {
   const s = App.state.settings;
-  return [s.currentSession, s.voteOpen, s.submitOpen, s.evalOpen, s.presentingGroup, s.activeDilemmaId].join('|');
+  return [s.currentSession, s.voteOpen, s.submitOpen, s.evalOpen, s.presentingGroup, s.activeDilemmaId, s.reflectionOpen].join('|');
 }
 async function refreshMe() { try { const m = await Api.get('me', App.cred); if (m.registered) App.me = m; } catch (e) {} }
 async function refreshState() { try { App.state = await Api.get('state'); } catch (e) {} }
@@ -175,6 +176,7 @@ function showSeatModal() {
 
 /* ---------- 2. 메인 화면 ---------- */
 function enterApp() {
+  App.comps = null;
   $('#logoutBtn').classList.remove('hidden');
   const m = App.me;
   App.tab = App.tab || 's' + Math.min(3, App.state.settings.currentSession);
@@ -216,13 +218,14 @@ function renderTab(keepInputs) {
   const root = $('#content'); if (!root) return;
   const snap = keepInputs ? snapshotInputs(root) : null;
   App.sig = settingsSig();
-  root.innerHTML = ({ s1: tabS1, s2: tabS2, s3: tabS3 }[App.tab] || tabS1)();
+  root.innerHTML = ({ s1: tabS1, s2: tabS2, s3: tabS3, rec: tabRec }[App.tab] || tabS1)();
   if (snap) restoreInputs(root, snap);
   updateLive();
 }
 
 /* 실시간 영역: data-live 속성을 가진 요소만 주기적으로 갱신 (입력 중인 폼은 건드리지 않음) */
 const LIVE = {
+  footprint() { return footprintHTML(); },
   voteResult(el) {
     const d = dilemmaOf(App.state, el.dataset.d), mine = App.me.votes[el.dataset.d];
     if (!mine) return `<p class="muted text-sm">투표하면 친구들의 선택 결과를 볼 수 있어요.</p>`;
@@ -304,6 +307,101 @@ function updateLive() {
   $$('[data-live]').forEach((el) => { const f = LIVE[el.dataset.live]; if (f) el.innerHTML = f(el); });
 }
 
+/* ---------- 개인 활동 기록 (생활기록부 참고용 성찰) ---------- */
+const REC_FIELDS = [
+  ['motivation', '1. 탐구 동기', '왜 이 역할과 주제를 골랐나요? 나의 관심사·진로와 어떻게 연결되나요?',
+    '예: 평소 데이터 과학에 관심이 있어 GCPD 수사본부를 선택했다. 예측 치안 AI가 범죄를 줄일 수 있지만 특정 지역 주민을 차별할 수 있다는 기사를 읽고, 기술의 공정성 문제를 탐구하고 싶어졌다.'],
+  ['process', '2. 세부 활동 내용', '내가 맡은 세부 탐구 질문, 찾아본 자료·사례, 토론에서 낸 의견, 발표·자료 제작에서 한 일을 구체적으로 적어 보세요.',
+    '예: 조에서 "해외 예측 치안 사례는 성공했을까?"를 맡아 기사 3건과 보고서 1건을 비교·정리했다. 토론에서 "효율성보다 데이터 편향 검증이 먼저"라는 의견을 근거와 함께 제시했고, 발표 자료의 사례 분석 슬라이드를 만들었다.'],
+  ['discovery', '3. 탐구를 통해 알게 된 점 · 생각의 변화', '1차시와 비교해 생각이 어떻게 달라졌나요? 어떤 윤리 이론·개념과 연결되나요?',
+    '예: 처음에는 범죄를 줄이는 결과가 가장 중요하다고 생각했지만(공리주의), 무고한 시민의 권리를 수단으로 삼으면 안 된다는 칸트의 관점을 접하고 절차적 정의의 중요성을 알게 되었다.'],
+  ['reflection', '5. 활동 전체 소감', '가장 기억에 남는 순간, 어려웠던 점과 극복 과정, 협업하며 느낀 점을 적어 보세요.',
+    '예: 같은 역할끼리도 의견이 갈려 주제를 정하기 어려웠지만, 각자의 추천 이유를 들어 보며 공통 관심사를 찾았다.'],
+  ['nextStep', '6. 후속 탐구 계획', '더 알고 싶어진 것은 무엇인가요? 진로와 어떻게 이어 가고 싶나요?',
+    '예: AI 알고리즘의 공정성을 검증하는 방법을 더 공부하고, 관련 진로 탐색 보고서를 쓰고 싶다.']
+];
+const COMPS = (window.GothamCore && GothamCore.COMPETENCIES) || [];
+
+function parseComps(text) {
+  const m = {};
+  String(text || '').split('\n').forEach((line) => { const r = line.match(/^\[(.+?)\]\s*(.*)$/); if (r) m[r[1]] = r[2]; });
+  return m;
+}
+function collectCompEvidence() {
+  $$('[data-comp-ev]').forEach((el) => { if (App.comps && el.dataset.compEv in App.comps) App.comps[el.dataset.compEv] = el.value; });
+}
+function compBlockHTML(open) {
+  const sel = Object.keys(App.comps);
+  return `<div class="flex flex-wrap gap-2">${COMPS.map((c) => `<button type="button" class="btn btn-sm ${sel.includes(c.key) ? 'btn-navy' : 'btn-ghost'}" data-act="comp" data-k="${esc(c.key)}" ${open ? '' : 'disabled'}>${sel.includes(c.key) ? '✓ ' : ''}${esc(c.key)}</button>`).join('')}</div>
+    <div class="grid gap-3 mt-3">${sel.map((k) => {
+      const c = COMPS.find((x) => x.key === k) || { hint: '' };
+      return `<div><label class="label">${esc(k)} <span class="muted font-normal">— ${esc(c.hint)}</span></label>
+        <input class="input" data-comp-ev="${esc(k)}" maxlength="400" placeholder="이 역량을 보여 준 구체적 장면 (언제, 무엇을, 어떻게)" value="${esc(App.comps[k] || '')}" ${open ? '' : 'disabled'}></div>`;
+    }).join('')}</div>`;
+}
+
+function footprintHTML() {
+  const st = App.state, m = App.me, gid = m.group.groupId;
+  const t = st.topics[gid], plan = m.plan, pick = m.topicPick;
+  const pickTitle = pick ? (pick.topicId === 'custom' ? pick.customTitle + ' (직접 제안)' : (st.topicIdeas.find((x) => x.topicId === pick.topicId) || {}).title) : '';
+  const votes = st.dilemmas.filter((d) => m.votes[d.dilemmaId]).map((d) => {
+    const v = m.votes[d.dilemmaId], i = LETTERS.indexOf(v.choice);
+    return `<li><b>${esc(d.title)}</b> → ${esc(v.choice + '. ' + (d.options[i] || '').split(' — ')[0])}${v.reason ? ` <span class="muted">(${esc(v.reason)})</span>` : ''}</li>`;
+  });
+  const row = (label, body) => `<div class="py-2" style="border-bottom:1px solid var(--line)"><div class="text-xs font-bold muted">${label}</div><div class="text-sm mt-0.5">${body}</div></div>`;
+  return [
+    row('역할 · 조', `${m.role.icon} ${esc(m.role.roleName)} · ${esc(m.group.groupName)} ${m.role.seat}번`),
+    row('1차시 딜레마 투표', votes.length ? `<ul class="list-disc pl-5">${votes.join('')}</ul>` : '<span class="muted">기록 없음</span>'),
+    row('역할 관점 정리', Object.keys(m.perspectives).length ? `${Object.keys(m.perspectives).length}개 딜레마에 대해 작성` : '<span class="muted">기록 없음</span>'),
+    row('내가 추천한 주제', pick ? `${esc(pickTitle)}${pick.reason ? ` <span class="muted">(${esc(pick.reason)})</span>` : ''}` : '<span class="muted">기록 없음</span>'),
+    row('우리 조 공동 주제', t ? `<b>${esc(t.title)}</b>${t.problem ? `<div class="muted">${esc(t.problem)}</div>` : ''}` : '<span class="muted">아직 확정 전</span>'),
+    row('나의 심화 탐구 분담', plan ? `[${esc(plan.career)}] ${esc(plan.task || '')}${plan.idea ? `<div class="muted">${esc(plan.idea)}</div>` : ''}` : '<span class="muted">기록 없음</span>'),
+    row('발표 질문 · 상호평가', `질문 ${m.myQuestions.length}개 · 평가 ${Object.keys(m.evals).length}개 조`)
+  ].join('');
+}
+
+function tabRec() {
+  const m = App.me, r = m.reflection || {}, open = App.state.settings.reflectionOpen !== 'N';
+  if (!App.comps) App.comps = parseComps(r.competencies);
+  return `
+  <section class="card mb-4" style="background:var(--gold-soft);border-color:transparent">
+    <div class="eyebrow">MY RECORD · 개인 활동 기록</div>
+    <h2>캠프 활동을 돌아보며 나의 탐구 이야기를 써 보세요</h2>
+    <p class="text-sm mt-1 ink2">이 기록은 <b>나만 볼 수 있고</b>, 선생님이 학교생활기록부를 작성할 때 참고해요. “열심히 했다”보다
+      <b>무엇을 · 어떻게 · 그래서 무엇을 배웠는지</b>를 구체적으로 쓰면 나의 성장이 잘 드러나요. 언제든 다시 들어와 고칠 수 있어요.</p>
+    ${r.updatedAt ? `<div class="badge badge-ok mt-2">✓ 마지막 저장 ${esc(r.updatedAt.slice(5, 16))}</div>` : ''}
+    ${open ? '' : '<div class="badge badge-danger mt-2">지금은 작성이 닫혀 있어요</div>'}
+  </section>
+
+  <section class="card mb-4">
+    <div class="flex items-center justify-between"><h2>📌 나의 활동 발자취</h2><span class="muted text-xs">앱에 기록된 내용을 자동으로 모았어요</span></div>
+    <div class="mt-2" data-live="footprint"></div>
+  </section>
+
+  ${REC_FIELDS.slice(0, 3).map(recFieldHTML(r, open)).join('')}
+
+  <section class="card mb-4">
+    <div class="eyebrow">4. 나의 역량 발견</div>
+    <h2>이번 활동에서 발휘한 나의 역량은?</h2>
+    <p class="muted text-sm">가장 잘 드러난 역량을 <b>최대 3개</b> 고르고, 그 역량을 보여 준 구체적인 장면을 적어 보세요.</p>
+    <div id="compBlock" class="mt-3">${compBlockHTML(open)}</div>
+  </section>
+
+  ${REC_FIELDS.slice(3).map(recFieldHTML(r, open)).join('')}
+
+  <div class="sticky bottom-3">
+    <button class="btn btn-gold btn-block text-lg shadow-lg" data-act="reflection" ${open ? '' : 'disabled'}>활동 기록 저장하기</button>
+  </div>`;
+}
+function recFieldHTML(r, open) {
+  return ([k, title, guide, ph]) => `<section class="card mb-4">
+    <h2>${title}</h2>
+    <p class="muted text-sm">${guide}</p>
+    <textarea id="rf-${k}" class="textarea mt-3" style="min-height:130px" placeholder="${esc(ph)}" data-count="cnt-${k}" ${open ? '' : 'disabled'}>${esc(r[k] || '')}</textarea>
+    <div class="text-right text-xs muted mt-1"><span id="cnt-${k}">${(r[k] || '').length}</span>자</div>
+  </section>`;
+}
+
 /* ---------- 1차시 ---------- */
 function tabS1() {
   const st = App.state, s = st.settings, open = s.voteOpen === 'Y';
@@ -382,7 +480,7 @@ function tabS2() {
 
   <section class="card mb-4">
     <div class="eyebrow">STEP 3 · 역할별 예시 탐구 주제</div>
-    <h2>${m.role.icon} ${esc(m.group.groupName)}· 탐구 주제 예시</h2>
+    <h2>${m.role.icon} ${esc(m.group.groupName)}가 탐구할 수 있는 주제</h2>
     <p class="muted text-sm">같은 역할 4명이 공통의 관심사를 탐구해요. 예시 주제를 읽고 마음에 드는 주제를 <b>한 명당 하나</b> 추천하세요. 새로운 주제를 직접 제안해도 좋아요.</p>
     <label class="label mt-3" for="tp-reason">추천 이유 <span class="muted font-normal">(내 관심사·진로와 어떻게 연결되나요?)</span></label>
     <input id="tp-reason" class="input" maxlength="300" placeholder="예: 데이터 과학자가 꿈이라 알고리즘 편향에 관심이 있어요" value="${esc(m.topicPick?.reason || '')}">
@@ -522,7 +620,18 @@ function bindContent() {
       return;
     }
     if (act === 'evalTarget') { App.evalTarget = b.dataset.g; return renderTab(); }
+    if (act === 'comp') {
+      collectCompEvidence();
+      const k = b.dataset.k;
+      if (k in App.comps) delete App.comps[k];
+      else { if (Object.keys(App.comps).length >= 3) return toast('역량은 최대 3개까지 고를 수 있어요.', 'err'); App.comps[k] = ''; }
+      $('#compBlock').innerHTML = compBlockHTML(true);
+      return;
+    }
     await submitAction(act, b);
+  });
+  root.addEventListener('input', (e) => {
+    const c = e.target.dataset && e.target.dataset.count; if (c && $('#' + c)) $('#' + c).textContent = e.target.value.length;
   });
   root.addEventListener('change', (e) => {
     if (e.target.id === 'gt-topic') {
@@ -564,6 +673,12 @@ async function submitAction(act, btn) {
       if (CRITERIA.some(([k]) => !sc[k])) return toast('모든 항목에 점수를 매겨 주세요.', 'err');
       payload = { targetGroup: t, ...sc, comment: v('ev-comment') }; okMsg = '평가를 제출했어요.'; break;
     }
+    case 'reflection': {
+      collectCompEvidence();
+      const comps = Object.keys(App.comps).map((k) => `[${k}] ${(App.comps[k] || '').replace(/\n/g, ' ').trim()}`).join('\n');
+      payload = { motivation: v('rf-motivation'), process: v('rf-process'), discovery: v('rf-discovery'), competencies: comps, reflection: v('rf-reflection'), nextStep: v('rf-nextStep') };
+      okMsg = '활동 기록을 저장했어요. 언제든 다시 고칠 수 있어요.'; break;
+    }
     default: return;
   }
   setBusy(btn, true);
@@ -573,7 +688,7 @@ async function submitAction(act, btn) {
     if (act === 'question') $('#q-text').value = '';
     await Promise.all([refreshMe(), refreshState()]);
     if (act === 'vote') { delete App.picks[payload.dilemmaId]; }
-    if (['vote', 'evaluate', 'perspective', 'topicPick'].includes(act)) renderTab(true); else updateLive();
+    if (['vote', 'evaluate', 'perspective', 'topicPick', 'reflection'].includes(act)) renderTab(true); else updateLive();
   } catch (e) { toast(e.message, 'err'); }
   finally { setBusy(btn, false); }
 }
