@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>고담시의 선택 · 현황판</title>
+  <meta name="description" content="빔프로젝터용 실시간 그룹 배치·투표 결과 대시보드">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='12' fill='%23F59E0B'/%3E%3Cpath d='M4 19v-6h2V11h1.5v2H9V7h2v12h1V9.5l1.5-1.5L15 9.5V19h1v-5h3v5z' fill='%230F172A'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="assets/css/tailwind.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script>try { const t = localStorage.getItem('gotham_dash_theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body class="dash">
+  <header class="topbar" style="position:relative">
+    <div class="px-6 py-3 flex items-center gap-4 flex-wrap">
+      <div class="signal" id="logo" style="width:44px;height:44px"></div>
+      <div class="min-w-0">
+        <div class="brand text-2xl leading-tight" id="campTitle">고담시의 선택</div>
+        <div class="text-sm text-indigo-200" id="sessionLabel">실시간 현황판</div>
+      </div>
+      <nav class="flex gap-1 ml-2 flex-wrap" id="viewTabs"></nav>
+      <div class="ml-auto flex items-center gap-4 flex-wrap">
+        <span class="stat">등록 <b id="regCount">-</b></span>
+        <span class="stat" id="clock"></span>
+        <span id="demoBadge" class="badge badge-gold hidden">데모 모드</span>
+        <label class="stat flex items-center gap-1 cursor-pointer"><input type="checkbox" id="autoView" checked> 자동 전환</label>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,.12);color:#fff" id="themeBtn" title="밝기 전환">☀︎/☾</button>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,.12);color:#fff" id="fsBtn" title="전체 화면">⛶</button>
+        <button class="btn btn-sm btn-gold" id="adminBtn">교사 제어</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-main" id="view">
+    <div class="skeleton h-96"></div>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+</body>
+</html>
