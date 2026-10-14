@@ -60,17 +60,19 @@ function vGroups() {
       <div class="bar-track" style="height:16px"><div class="bar-fill" style="width:${pct(reg, total)}%;background:var(--gold)"></div></div>
     </div>
   </div>
-  <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+  <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
     ${st.groups.map((g) => {
+      const rt = roleTypeOf(st, g.groupId);
       const seats = st.roles.filter((r) => r.groupId === g.groupId).sort((a, b) => a.seat - b.seat);
       const n = seats.filter((r) => r.taken).length;
       return `<section class="card group-col" style="--gc:${g.color}">
-        <div class="flex items-baseline justify-between"><div class="text-3xl font-black" style="color:${g.color}">${esc(g.groupName)}</div><div class="text-xl font-extrabold">${n}/${seats.length}</div></div>
-        <div class="muted font-semibold mb-3">${esc(g.table)}</div>
+        <div class="flex items-start justify-between gap-2"><div class="text-4xl">${rt.icon || ''}</div><div class="text-xl font-extrabold">${n}/${seats.length}</div></div>
+        <div class="text-2xl font-black leading-tight mt-1" style="color:${g.color}">${esc(g.groupName)}</div>
+        <div class="muted font-semibold mb-3">${esc(rt.roleName || '')} · ${esc(g.table)}</div>
         <div class="grid gap-2">${seats.map((r) => `
           <div class="seat-row ${r.taken ? '' : 'empty'}"><div class="n">${r.seat}</div>
             <div class="min-w-0"><div class="who">${r.taken ? esc(r.studentName) : '<span class="muted">대기 중</span>'}</div>
-            <div class="role">${r.icon} ${esc(r.roleName)} · ${esc(r.cardId)}</div></div></div>`).join('')}</div>
+            <div class="role">${esc(r.cardId)}${r.gender ? ' · ' + esc(r.gender) : ''}</div></div></div>`).join('')}</div>
       </section>`;
     }).join('')}
   </div>`;
@@ -116,19 +118,23 @@ function vVote() {
 function vTopics() {
   const st = D.state;
   return `
-  <div class="eyebrow">SESSION 2 · 고담시 문제 해결 대책</div><h1 class="title mb-4">그룹별 탐구 주제 & 진로 연계</h1>
-  <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+  <div class="eyebrow">SESSION 2 · 역할별 공동 탐구</div><h1 class="title mb-4">조별 탐구 주제 & 심화 탐구 분담</h1>
+  <div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr))">
   ${st.groups.map((g) => {
-    const t = st.topics[g.groupId], d = t && dilemmaOf(st, t.dilemmaId);
+    const t = st.topics[g.groupId], rt = roleTypeOf(st, g.groupId);
+    const idea = t && st.topicIdeas.find((x) => x.topicId === t.topicId);
     const plans = st.plans.filter((p) => p.groupId === g.groupId);
+    const picks = Object.values(st.topicPicks[g.groupId] || {}).sort((a, b) => b.count - a.count).slice(0, 3);
+    const pickTitle = (p) => p.topicId === 'custom' ? '💡 ' + p.customTitle : (st.topicIdeas.find((x) => x.topicId === p.topicId) || {}).title || p.topicId;
     return `<section class="card group-col" style="--gc:${g.color}">
-      <div class="text-2xl font-black" style="color:${g.color}">${esc(g.groupName)}</div>
-      ${t ? `<div class="badge badge-gold mt-2" style="font-size:.9rem">${esc(d ? d.title : t.dilemmaId)}</div>
+      <div class="flex items-center gap-2"><span class="text-2xl">${rt.icon || ''}</span><span class="text-2xl font-black" style="color:${g.color}">${esc(g.groupName)}</span></div>
+      ${t ? `<div class="flex gap-2 mt-2 flex-wrap"><span class="badge badge-ok" style="font-size:.85rem">✓ 주제 확정</span><span class="badge" style="font-size:.85rem">${idea ? '예시 주제 기반' : '직접 정한 주제'}</span></div>
         <div class="text-2xl font-extrabold mt-2 leading-snug">${esc(t.title)}</div>
-        ${t.problem ? `<p class="ink2 mt-1">${nl2br(t.problem)}</p>` : ''}`
-      : '<div class="muted text-xl mt-3">주제 선정 중…</div>'}
+        ${t.problem ? `<p class="ink2 mt-1 text-lg">${nl2br(t.problem)}</p>` : ''}`
+      : `<div class="muted text-lg mt-2">공동 토론 중… 추천 현황</div>
+        <div class="grid gap-1 mt-2">${picks.length ? picks.map((p) => `<div class="flex items-center gap-2 text-lg"><span class="badge badge-gold" style="font-size:.9rem">${p.count}표</span><span class="truncate">${esc(pickTitle(p))}</span></div>`).join('') : '<span class="muted">아직 추천 없음</span>'}</div>`}
       <div class="divider"></div>
-      <div class="grid gap-2">${plans.length ? plans.map((p) => `<div class="flex items-center gap-2 text-lg"><span>${p.icon}</span><b>${esc(p.name)}</b><span class="badge badge-sky">${esc(p.career)}</span><span class="muted text-base truncate">${esc(p.task)}</span></div>`).join('') : '<span class="muted">구성원 계획 작성 전</span>'}</div>
+      <div class="grid gap-2 sm:grid-cols-2">${plans.length ? plans.map((p) => `<div class="text-lg"><b>${esc(p.name)}</b> <span class="badge badge-sky">${esc(p.career)}</span><div class="muted text-base">${esc(p.task)}</div></div>`).join('') : '<span class="muted">세부 탐구 분담 작성 전</span>'}</div>
     </section>`;
   }).join('')}</div>`;
 }
