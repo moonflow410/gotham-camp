@@ -3,7 +3,7 @@
  * GAS 는 CORS preflight(OPTIONS)를 지원하지 않으므로 POST 는 text/plain 으로 보냅니다.
  */
 const Mock = (() => {
-  const KEY = 'gotham_demo_db_v1';
+  const KEY = 'gotham_demo_db_v2';
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   function load() {
     try { const s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch (e) {}
@@ -47,18 +47,24 @@ const Mock = (() => {
       H('perspective', { ...c, dilemmaId: 'D1', stance: '제한적 허용', argument: '내 역할의 관점에서 보면 시민 안전과 법치가 함께 지켜져야 한다.' });
       H('memberPlan', { ...c, career: pick(careers), task: pick(['자료 조사', '발표', '슬라이드 디자인', '해결책 설계']), idea: '진로와 연결한 해결 아이디어 예시입니다.' });
     });
-    const firstOf = (g) => db.Students.find((s) => s.groupId === g);
-    const topics = { A: ['D1', '자경단 없이도 안전한 고담 만들기'], B: ['D4', '내로우스 청소년 범죄 예방 예산'], C: ['D2', '감시 기술, 어디까지 허용할까'], D: ['D5', '공적 인물의 진실과 언론의 책임'] };
-    Object.keys(topics).forEach((g) => {
-      const s = firstOf(g); if (!s) return;
-      const c = { studentId: s.studentId, name: s.name };
-      H('groupTopic', { ...c, dilemmaId: topics[g][0], title: topics[g][1], problem: '고담시가 마주한 문제를 정의한 예시 문장입니다.' });
+    const groups = db.Groups.map((g) => g.groupId);
+    groups.forEach((g, gi) => {
+      const members = db.Students.filter((s) => s.groupId === g);
+      const ideas = db.Topics.filter((t) => t.roleKey === g);
+      members.forEach((s, k) => {
+        const c = { studentId: s.studentId, name: s.name };
+        const t = ideas[k % 2];
+        H('topicPick', { ...c, topicId: k === 3 ? 'custom' : t.topicId, customTitle: '우리 학교 주변 안전 지도 만들기', reason: k % 2 ? '내 진로와 바로 연결돼요' : '' });
+      });
+      const s0 = members[0]; if (!s0 || gi === 5) return;   // 마지막 조는 '토론 중' 상태로 남겨둠
+      const c = { studentId: s0.studentId, name: s0.name };
+      H('groupTopic', { ...c, topicId: ideas[0].topicId, title: ideas[0].title, problem: ideas[0].question, method: '현실 사례 3개 조사 → 공리주의·의무론 관점 비교 → 해결책 제안' });
       H('submission', { ...c, summary: '탐구 요약 예시', solution: '해결 대책 예시', slideLink: 'https://docs.google.com/presentation/' });
     });
-    db.Students.slice(0, 8).forEach((s) => H('question', { studentId: s.studentId, name: s.name, targetGroup: s.groupId === 'A' ? 'B' : 'A', question: pick(['예산은 어디서 마련하나요?', '시민의 사생활은 어떻게 보호하나요?', '실제 사례가 있나요?', '부작용은 없을까요?']) }));
-    db.Students.forEach((s) => ['A', 'B', 'C', 'D'].filter((g) => g !== s.groupId).forEach((g) =>
+    db.Students.slice(0, 10).forEach((s) => H('question', { studentId: s.studentId, name: s.name, targetGroup: s.groupId === 'CIT' ? 'GPD' : 'CIT', question: pick(['예산은 어디서 마련하나요?', '시민의 사생활은 어떻게 보호하나요?', '실제 사례가 있나요?', '부작용은 없을까요?']) }));
+    db.Students.forEach((s) => groups.filter((g) => g !== s.groupId).forEach((g) =>
       H('evaluate', { studentId: s.studentId, name: s.name, targetGroup: g, logic: 3 + (Math.random() * 3 | 0), creativity: 2 + (Math.random() * 4 | 0), feasibility: 2 + (Math.random() * 4 | 0), delivery: 3 + (Math.random() * 3 | 0), comment: '' })));
-    set('evalOpen', 'N'); set('presentingGroup', 'A');
+    set('evalOpen', 'N'); set('presentingGroup', 'CIT');
     save(db);
   }
   return { get, post, reset, fill };
