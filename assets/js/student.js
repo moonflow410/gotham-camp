@@ -94,7 +94,7 @@ function renderRegister() {
       <div><div class="eyebrow">STEP 2</div><h2>받은 신분증 카드 번호를 선택하세요</h2></div>
       <span class="badge whitespace-nowrap" id="r-count"></span>
     </div>
-    <p class="muted text-sm mt-1">이미 다른 친구가 등록한 카드는 선택할 수 없어요.</p>
+    <p class="muted text-sm mt-1">같은 역할 4명이 한 조가 되어 공통 관심사를 탐구해요. 이미 등록된 카드는 선택할 수 없어요.</p>
     <div id="cardGrid" class="mt-4 grid gap-4"></div>
   </section>
 
@@ -115,7 +115,8 @@ function updateCardGrid() {
   grid.innerHTML = st.roleTypes.map((rt) => {
     const cards = st.roles.filter((r) => r.roleKey === rt.roleKey);
     return `<div>
-      <div class="flex items-center gap-2 mb-2"><span class="text-xl">${rt.icon}</span><b>${esc(rt.roleName)}</b></div>
+      <div class="flex items-center gap-2"><span class="text-xl">${rt.icon}</span><b>${esc(rt.roleName)}</b><span class="muted text-xs ml-auto whitespace-nowrap">${cards.filter((c) => !c.taken).length}자리 남음</span></div>
+      <p class="text-xs muted mt-1 mb-2">${esc(rt.description)} <span class="ink2">· 관심 진로: ${esc(rt.careerHint)}</span></p>
       <div class="pick-grid">${cards.map((c) => `
         <button class="pick ${App.picked === c.cardId ? 'sel' : ''}" data-card="${esc(c.cardId)}" ${c.taken ? 'disabled' : ''} type="button">
           <b>${esc(c.cardId)}</b><small>${c.taken ? '등록됨' : '선택 가능'}</small>
@@ -241,14 +242,30 @@ const LIVE = {
     }).join('<div class="divider" style="margin:4px 0"></div>');
   },
   groupTopic() {
-    const t = App.state.topics[App.me.group.groupId];
-    if (!t) return `<p class="muted text-sm">아직 우리 그룹 주제가 정해지지 않았어요. 함께 논의한 뒤 아래에 등록하세요.</p>`;
-    const d = dilemmaOf(App.state, t.dilemmaId);
+    const st = App.state, t = st.topics[App.me.group.groupId];
+    if (!t) return `<p class="muted text-sm">아직 확정된 공동 주제가 없어요. 위의 추천 현황을 보며 토론한 뒤 아래에 등록하세요.</p>`;
+    const idea = st.topicIdeas.find((x) => x.topicId === t.topicId), d = dilemmaOf(st, t.dilemmaId);
     return `<div class="rounded-xl p-4" style="background:var(--gold-soft)">
-      <div class="text-xs font-bold" style="color:var(--gold-ink)">공통 딜레마 · ${esc(d ? d.title : t.dilemmaId)}</div>
+      <div class="text-xs font-bold" style="color:var(--gold-ink)">✓ 공동 토론으로 확정 · ${idea ? '예시 주제 기반' : '직접 정한 주제'}${d ? ' · 연결 딜레마: ' + esc(d.title) : ''}</div>
       <div class="text-lg font-extrabold mt-1">${esc(t.title)}</div>
-      ${t.problem ? `<p class="text-sm mt-1 ink2">${nl2br(t.problem)}</p>` : ''}
+      ${t.problem ? `<p class="text-sm mt-1"><b>탐구 질문</b> ${nl2br(t.problem)}</p>` : ''}
+      ${t.method ? `<p class="text-sm mt-1 ink2"><b>심화 탐구 계획</b> ${nl2br(t.method)}</p>` : ''}
       <div class="text-xs muted mt-2">마지막 수정: ${esc(t.updatedBy)} · ${esc(t.updatedAt.slice(5, 16))}</div></div>`;
+  },
+  topicTally() {
+    const st = App.state, gid = App.me.group.groupId;
+    const picks = Object.values(st.topicPicks[gid] || {}).sort((a, b) => b.count - a.count);
+    const members = st.roles.filter((r) => r.groupId === gid && r.taken).length;
+    const voted = picks.reduce((a, p) => a + p.count, 0);
+    if (!picks.length) return `<p class="muted text-sm">아직 추천한 친구가 없어요. 마음에 드는 주제의 [이 주제 추천] 버튼을 눌러 보세요.</p>`;
+    return `<div class="flex justify-between text-sm mb-2"><b>우리 조 추천 현황</b><span class="muted">${voted} / ${members}명 참여</span></div><div class="grid gap-2">` + picks.map((p) => {
+      const idea = st.topicIdeas.find((x) => x.topicId === p.topicId);
+      const title = p.topicId === 'custom' ? '💡 ' + p.customTitle : idea ? idea.title : p.topicId;
+      return `<div class="rounded-xl p-3" style="background:var(--surface-2);border:1px solid var(--line)">
+        <div class="flex items-center gap-2"><b class="flex-1 text-sm">${esc(title)}</b><span class="badge badge-gold">${p.count}표</span></div>
+        <div class="text-xs muted mt-1">${p.names.map(esc).join(', ')}</div>
+        ${p.reasons.map((r) => `<div class="text-xs ink2 mt-1">“${esc(r.reason)}” — ${esc(r.name)}</div>`).join('')}</div>`;
+    }).join('') + '</div>';
   },
   groupPlans() {
     const st = App.state, gid = App.me.group.groupId;
@@ -256,9 +273,9 @@ const LIVE = {
     return `<div class="grid gap-2">` + members.map((r) => {
       const p = st.plans.find((x) => x.name === r.studentName && x.groupId === gid);
       return `<div class="rounded-xl p-3" style="background:var(--surface-2);border:1px solid var(--line)">
-        <div class="flex items-center gap-2"><span>${r.icon}</span><b>${esc(r.studentName || '(미등록)')}</b><span class="muted text-xs">${esc(r.roleName)}</span>
+        <div class="flex items-center gap-2"><span class="L-dot" style="background:${App.me.group.color}">${r.seat}</span><b>${esc(r.studentName || '(미등록)')}</b>
         ${p ? `<span class="badge badge-sky ml-auto">${esc(p.career)}</span>` : '<span class="badge ml-auto">작성 전</span>'}</div>
-        ${p ? `<div class="text-sm mt-1"><b>담당:</b> ${esc(p.task || '-')}</div>${p.idea ? `<div class="text-sm ink2 mt-0.5">💡 ${esc(p.idea)}</div>` : ''}` : ''}
+        ${p ? `<div class="text-sm mt-1"><b>세부 탐구 질문:</b> ${esc(p.task || '-')}</div>${p.idea ? `<div class="text-sm ink2 mt-0.5">🔎 ${esc(p.idea)}</div>` : ''}` : ''}
       </div>`;
     }).join('') + '</div>';
   },
@@ -340,11 +357,12 @@ function tabS2() {
   const pvD = App.pvD || (firstD ? firstD.dilemmaId : '');
   const myP = m.perspectives[pvD] || {};
   const plan = m.plan || {};
+  const ideas = st.topicIdeas.filter((x) => x.roleKey === m.role.roleKey);
   return `
   <section class="card mb-4">
     <div class="eyebrow">STEP 1 · 결과 분석</div>
     <h2>1차시 투표 결과 돌아보기</h2>
-    <p class="muted text-sm">전체 결과와 <b>나와 같은 역할</b> 친구들의 선택을 비교해 보세요. 왜 차이가 날까요?</p>
+    <p class="muted text-sm">전체 결과와 <b>우리 조(같은 역할)</b> 친구들의 선택을 비교해 보세요. 왜 차이가 날까요?</p>
     <div data-live="analysis" class="mt-2"></div>
   </section>
 
@@ -363,36 +381,65 @@ function tabS2() {
   </section>
 
   <section class="card mb-4">
-    <div class="eyebrow">STEP 3 · 그룹 공통 주제</div>
-    <h2>‘고담시 문제 해결 대책’ 주제 선정</h2>
-    <p class="muted text-sm">그룹원과 논의해 딜레마 1개를 고르고, 해결할 문제를 정의하세요. 그룹원 누구나 수정할 수 있어요.</p>
-    <div data-live="groupTopic" class="mt-3"></div>
+    <div class="eyebrow">STEP 3 · 역할별 예시 탐구 주제</div>
+    <h2>${m.role.icon} ${esc(m.group.groupName)}가 탐구할 수 있는 주제</h2>
+    <p class="muted text-sm">같은 역할 4명이 공통의 관심사를 탐구해요. 예시 주제를 읽고 마음에 드는 주제를 <b>한 명당 하나</b> 추천하세요. 새로운 주제를 직접 제안해도 좋아요.</p>
+    <label class="label mt-3" for="tp-reason">추천 이유 <span class="muted font-normal">(내 관심사·진로와 어떻게 연결되나요?)</span></label>
+    <input id="tp-reason" class="input" maxlength="300" placeholder="예: 데이터 과학자가 꿈이라 알고리즘 편향에 관심이 있어요" value="${esc(m.topicPick?.reason || '')}">
+    <div class="grid gap-3 mt-3">${ideas.map((t, i) => {
+      const d = dilemmaOf(st, t.dilemmaId), mine = m.topicPick?.topicId === t.topicId;
+      return `<div class="rounded-2xl p-4" style="background:var(--surface-2);border:1.5px solid ${mine ? 'var(--gold)' : 'var(--line)'}">
+        <div class="flex items-center gap-2 flex-wrap"><span class="badge">예시 ${i + 1}</span>${d ? `<span class="badge badge-sky">딜레마: ${esc(d.title)}</span>` : ''}${mine ? '<span class="badge badge-gold">내 추천</span>' : ''}</div>
+        <h3 class="mt-2 text-base font-extrabold">${esc(t.title)}</h3>
+        <p class="text-sm mt-1"><b>탐구 질문</b> ${esc(t.question)}</p>
+        <p class="text-xs muted mt-1">🌐 현실 연결: ${esc(t.realWorld)} · 🎓 관련 진로: ${esc(t.careers)}</p>
+        <button class="btn btn-sm ${mine ? 'btn-gold' : 'btn-ghost'} mt-3" data-act="topicPick" data-t="${t.topicId}">${mine ? '✓ 추천함 (이유 수정 시 다시 누르기)' : '이 주제 추천'}</button>
+      </div>`;
+    }).join('')}
+      <div class="rounded-2xl p-4" style="border:1.5px dashed var(--line)">
+        <b class="text-sm">💡 직접 제안하기</b>
+        <div class="flex gap-2 mt-2"><input id="tp-custom" class="input" maxlength="100" placeholder="새로운 탐구 주제" value="${esc(m.topicPick?.topicId === 'custom' ? m.topicPick.customTitle : '')}">
+        <button class="btn btn-ghost flex-none" data-act="topicPick" data-t="custom">제안</button></div>
+      </div>
+    </div>
     <div class="divider"></div>
-    <label class="label" for="gt-d">공통 딜레마</label>
-    <select id="gt-d" class="select">${st.dilemmas.filter((d) => d.isTopic).map((d) => `<option value="${d.dilemmaId}" ${t.dilemmaId === d.dilemmaId ? 'selected' : ''}>${esc(d.title)}</option>`).join('')}</select>
-    <label class="label mt-3" for="gt-title">탐구 주제 (제목)</label>
-    <input id="gt-title" class="input" placeholder="예: 자경단 없이도 안전한 고담 만들기" value="${esc(t.title || '')}">
-    <label class="label mt-3" for="gt-problem">고담시가 겪는 문제 정의 (현실 사회와 연결)</label>
-    <textarea id="gt-problem" class="textarea" placeholder="고담시의 어떤 문제를, 왜 해결해야 하나요? 현실 사회의 비슷한 사례는?">${esc(t.problem || '')}</textarea>
-    <button class="btn btn-navy btn-block mt-3" data-act="groupTopic">그룹 주제 저장하기</button>
+    <div data-live="topicTally"></div>
   </section>
 
   <section class="card mb-4">
-    <div class="eyebrow">STEP 4 · 진로 연계</div>
-    <h2>나의 진로·관심사로 해결책 더하기</h2>
-    <p class="muted text-sm">추천 분야: ${esc(m.role.careerHint)}</p>
+    <div class="eyebrow">STEP 4 · 공동 토론 → 주제 확정</div>
+    <h2>우리 조 공동 탐구 주제 정하기</h2>
+    <p class="muted text-sm">추천 현황을 보며 토론해 하나로 정하세요. 정한 뒤 한 명이 대표로 저장하면 돼요. 그룹원 누구나 수정할 수 있어요.</p>
+    <div data-live="groupTopic" class="mt-3"></div>
+    <div class="divider"></div>
+    <label class="label" for="gt-topic">기반 주제</label>
+    <select id="gt-topic" class="select">${ideas.map((x) => `<option value="${x.topicId}" ${t.topicId === x.topicId ? 'selected' : ''}>${esc(x.title)}</option>`).join('')}
+      <option value="custom" ${t.topicId === 'custom' ? 'selected' : ''}>직접 정한 주제</option></select>
+    <label class="label mt-3" for="gt-title">우리 조 탐구 주제 (제목)</label>
+    <input id="gt-title" class="input" placeholder="예시 주제를 우리 관심사에 맞게 다듬어 보세요" value="${esc(t.title || '')}">
+    <label class="label mt-3" for="gt-problem">핵심 탐구 질문 & 문제 정의</label>
+    <textarea id="gt-problem" class="textarea" placeholder="고담시의 어떤 문제를, 왜 탐구하나요? 현실 사회에서는 어떤 모습으로 나타나나요?">${esc(t.problem || '')}</textarea>
+    <label class="label mt-3" for="gt-method">심화 탐구 계획</label>
+    <textarea id="gt-method" class="textarea" placeholder="조사할 현실 사례·자료, 비교할 윤리 이론(공리주의·의무론 등), 해결 방향, 발표 구성">${esc(t.method || '')}</textarea>
+    <button class="btn btn-navy btn-block mt-3" data-act="groupTopic">공동 주제 저장하기</button>
+  </section>
+
+  <section class="card mb-4">
+    <div class="eyebrow">STEP 5 · 심화 탐구 분담</div>
+    <h2>나의 관심사로 맡을 세부 탐구</h2>
+    <p class="muted text-sm">공동 주제를 4명이 나누어 깊이 파고들어요. 이 역할과 어울리는 진로: ${esc(m.role.careerHint)}</p>
     <div class="grid sm:grid-cols-2 gap-3 mt-3">
-      <div><label class="label" for="mp-career">진로/관심 분야</label>
+      <div><label class="label" for="mp-career">나의 진로/관심 분야</label>
         <select id="mp-career" class="select"><option value="">선택하세요</option>${CAREERS.map((c) => `<option ${plan.career === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
-      <div><label class="label" for="mp-task">그룹 내 담당 역할</label><input id="mp-task" class="input" placeholder="예: 자료 조사, 정책 설계, 발표" value="${esc(plan.task || '')}"></div>
+      <div><label class="label" for="mp-task">내가 맡을 세부 탐구 질문</label><input id="mp-task" class="input" placeholder="예: 해외 예측 치안 사례는 성공했을까?" value="${esc(plan.task || '')}"></div>
     </div>
-    <label class="label mt-3" for="mp-idea">내 분야로 제안하는 해결 아이디어</label>
-    <textarea id="mp-idea" class="textarea" placeholder="예: (공학) 사생활을 지키는 익명화 CCTV 기술을 도입한다">${esc(plan.idea || '')}</textarea>
-    <button class="btn btn-navy btn-block mt-3" data-act="memberPlan">진로 연계 계획 저장하기</button>
+    <label class="label mt-3" for="mp-idea">탐구 방법·자료 & 해결 아이디어</label>
+    <textarea id="mp-idea" class="textarea" placeholder="예: 관련 기사·논문 3개 비교 → (공학) 편향을 줄이는 알고리즘 검증 절차 제안">${esc(plan.idea || '')}</textarea>
+    <button class="btn btn-navy btn-block mt-3" data-act="memberPlan">심화 탐구 분담 저장하기</button>
   </section>
 
   <section class="card">
-    <div class="flex items-center justify-between"><h2>우리 그룹 계획 현황</h2><span class="badge" style="background:${m.group.color}22;color:${m.group.color};border-color:transparent">${esc(m.group.groupName)}</span></div>
+    <div class="flex items-center justify-between"><h2>우리 조 심화 탐구 현황</h2><span class="badge" style="background:${m.group.color}22;color:${m.group.color};border-color:transparent">${esc(m.group.groupName)}</span></div>
     <div data-live="groupPlans" class="mt-3"></div>
   </section>`;
 }
@@ -478,6 +525,12 @@ function bindContent() {
     await submitAction(act, b);
   });
   root.addEventListener('change', (e) => {
+    if (e.target.id === 'gt-topic') {
+      const idea = App.state.topicIdeas.find((x) => x.topicId === e.target.value);
+      const title = $('#gt-title'), prob = $('#gt-problem');
+      if (idea && (!title.value || App.state.topicIdeas.some((x) => x.title === title.value))) title.value = idea.title;
+      if (idea && !prob.value) prob.value = idea.question;
+    }
     if (e.target.id === 'pv-d') {
       App.pvD = e.target.value;
       const p = App.me.perspectives[e.target.value] || {};
@@ -497,8 +550,13 @@ async function submitAction(act, btn) {
       payload = { dilemmaId: d, choice, reason: v('reason-' + d) }; okMsg = '투표가 반영되었어요!'; break;
     }
     case 'perspective': payload = { dilemmaId: v('pv-d'), stance: v('pv-s'), argument: v('pv-arg') }; okMsg = '관점을 저장했어요.'; break;
-    case 'groupTopic': payload = { dilemmaId: v('gt-d'), title: v('gt-title'), problem: v('gt-problem') }; okMsg = '그룹 주제를 저장했어요.'; break;
-    case 'memberPlan': payload = { career: v('mp-career'), task: v('mp-task'), idea: v('mp-idea') }; okMsg = '진로 연계 계획을 저장했어요.'; break;
+    case 'groupTopic': payload = { topicId: v('gt-topic'), title: v('gt-title'), problem: v('gt-problem'), method: v('gt-method') }; okMsg = '공동 주제를 저장했어요.'; break;
+    case 'topicPick': {
+      const tid = btn.dataset.t;
+      payload = { topicId: tid, customTitle: tid === 'custom' ? v('tp-custom') : '', reason: v('tp-reason') };
+      okMsg = '추천했어요! 조원들과 토론해 보세요.'; break;
+    }
+    case 'memberPlan': payload = { career: v('mp-career'), task: v('mp-task'), idea: v('mp-idea') }; okMsg = '심화 탐구 분담을 저장했어요.'; break;
     case 'submission': payload = { summary: v('sb-summary'), solution: v('sb-solution'), slideLink: v('sb-link') }; okMsg = '그룹 자료를 저장했어요.'; break;
     case 'question': payload = { targetGroup: v('q-target'), question: v('q-text') }; okMsg = '질문을 보냈어요!'; break;
     case 'evaluate': {
@@ -515,7 +573,7 @@ async function submitAction(act, btn) {
     if (act === 'question') $('#q-text').value = '';
     await Promise.all([refreshMe(), refreshState()]);
     if (act === 'vote') { delete App.picks[payload.dilemmaId]; }
-    if (act === 'vote' || act === 'evaluate' || act === 'perspective') renderTab(true); else updateLive();
+    if (['vote', 'evaluate', 'perspective', 'topicPick'].includes(act)) renderTab(true); else updateLive();
   } catch (e) { toast(e.message, 'err'); }
   finally { setBusy(btn, false); }
 }
