@@ -26,8 +26,22 @@ var GothamCore = (function () {
     MemberPlans:  ['studentId', 'name', 'groupId', 'roleKey', 'career', 'task', 'idea', 'updatedAt'],
     Submissions:  ['groupId', 'summary', 'solution', 'slideLink', 'updatedBy', 'updatedAt'],
     Questions:    ['id', 'studentId', 'name', 'fromGroup', 'targetGroup', 'question', 'status', 'createdAt'],
-    Evaluations:  ['studentId', 'name', 'fromGroup', 'targetGroup', 'logic', 'creativity', 'feasibility', 'delivery', 'comment', 'updatedAt']
+    Evaluations:  ['studentId', 'name', 'fromGroup', 'targetGroup', 'logic', 'creativity', 'feasibility', 'delivery', 'comment', 'updatedAt'],
+    Reflections:  ['studentId', 'name', 'groupId', 'roleKey', 'motivation', 'process', 'discovery', 'competencies', 'reflection', 'nextStep', 'updatedAt']
   };
+
+  /* 학생 자기 성찰용 역량 목록 (생활기록부 작성 참고) */
+  var COMPETENCIES = [
+    { key: '비판적 사고력', hint: '주장과 근거를 따져 보고 다른 관점을 검토했다' },
+    { key: '윤리적 판단력', hint: '가치가 충돌하는 상황에서 원칙과 결과를 함께 고려해 판단했다' },
+    { key: '공감·관점 수용', hint: '다른 역할과 입장의 처지를 이해하려 했다' },
+    { key: '의사소통·토론', hint: '근거를 들어 의견을 말하고 다른 의견을 경청했다' },
+    { key: '협업·리더십', hint: '조원과 역할을 나누고 공동의 결론을 이끌었다' },
+    { key: '자료 탐색·정보 활용', hint: '현실 사례와 자료를 찾아 분석했다' },
+    { key: '창의적 문제해결', hint: '새로운 해결책을 설계했다' },
+    { key: '진로 탐색·연계', hint: '탐구를 나의 진로·관심 분야와 연결했다' },
+    { key: '공동체 의식', hint: '공동체의 문제에 책임감을 갖고 참여했다' }
+  ];
 
   /* ===== 2. 샘플(초기) 데이터 — 시트에서 자유롭게 수정 가능 ===== */
   var SETTINGS_SEED = [
@@ -40,6 +54,7 @@ var GothamCore = (function () {
     { key: 'presentingGroup',  value: '',   note: '현재 발표 그룹 ID (예: A)' },
     { key: 'dashboardView',    value: 'groups', note: 'groups / vote / topics / present' },
     { key: 'notice',           value: '다음 2차시에는 오늘의 투표 결과를 우리 역할의 눈으로 다시 분석합니다. 같은 역할 4명이 역할별 예시 탐구 주제를 살펴보고, 공동 토론으로 하나를 정해 심화 탐구를 시작해요.', note: '학생 화면 공지' },
+    { key: 'reflectionOpen',   value: 'Y',  note: '개인 활동 기록(성찰) 작성 허용 Y/N' },
     { key: 'allowUnlisted',    value: 'N',  note: '명렬표에 없는 학번 등록 허용 Y/N' },
     { key: 'adminPin',         value: '0000', note: '교사용 PIN — 반드시 변경하세요 (화면에 노출되지 않음)' }
   ];
@@ -325,6 +340,9 @@ var GothamCore = (function () {
     });
     var plan = find(db.MemberPlans, function (p) { return S(p.studentId) === sid; });
     var pick = find(db.TopicPicks || [], function (p) { return S(p.studentId) === sid; });
+    var refl = find(db.Reflections || [], function (r) { return S(r.studentId) === sid; });
+    var myQuestions = (db.Questions || []).filter(function (q) { return S(q.studentId) === sid; })
+      .map(function (q) { return { targetGroup: S(q.targetGroup), question: S(q.question) }; });
     return {
       ok: true, registered: true,
       student: { studentId: sid, name: S(st.name), gender: S(st.gender), cardId: S(st.cardId) },
@@ -333,8 +351,44 @@ var GothamCore = (function () {
       group: { groupId: S(group.groupId), groupName: S(group.groupName), table: S(group.table), color: S(group.color) || '#F59E0B', motto: S(group.motto) },
       votes: votes, perspectives: persp, evals: evals,
       plan: plan ? { career: S(plan.career), task: S(plan.task), idea: S(plan.idea) } : null,
-      topicPick: pick ? { topicId: S(pick.topicId), customTitle: S(pick.customTitle), reason: S(pick.reason) } : null
+      topicPick: pick ? { topicId: S(pick.topicId), customTitle: S(pick.customTitle), reason: S(pick.reason) } : null,
+      myQuestions: myQuestions,
+      reflection: refl ? { motivation: S(refl.motivation), process: S(refl.process), discovery: S(refl.discovery), competencies: S(refl.competencies),
+        reflection: S(refl.reflection), nextStep: S(refl.nextStep), updatedAt: S(refl.updatedAt) } : null
     };
+  }
+
+  /* ===== 5-1. 교사용: 학생별 활동 기록 모아보기 (생활기록부 작성 참고) ===== */
+  function buildRecords(db) {
+    var dil = {}; dilemmaList(db).forEach(function (d) { dil[d.dilemmaId] = d; });
+    var grp = {}; db.Groups.forEach(function (g) { grp[S(g.groupId)] = S(g.groupName); });
+    var idea = {}; (db.Topics || []).forEach(function (t) { idea[S(t.topicId)] = S(t.title); });
+    var by = function (table, sid) { return (db[table] || []).filter(function (r) { return S(r.studentId) === sid; }); };
+    var optText = function (d, c) { var i = LETTERS.indexOf(S(c)); return d && i >= 0 ? c + '. ' + (d.options[i] || '').split(' — ')[0] : S(c); };
+    return db.Students.filter(function (s) { return S(s.studentId); }).map(function (s) {
+      var sid = S(s.studentId), card = cardOf(db, s.cardId) || {}, gid = S(card.groupId);
+      var gt = find(db.GroupTopics, function (t) { return S(t.groupId) === gid; }) || {};
+      var sub = find(db.Submissions, function (t) { return S(t.groupId) === gid; }) || {};
+      var plan = by('MemberPlans', sid)[0] || {}, pick = by('TopicPicks', sid)[0] || {}, refl = by('Reflections', sid)[0] || null;
+      var recv = db.Evaluations.filter(function (e) { return gid && S(e.targetGroup) === gid; });
+      var avg = function (k) { return recv.length ? Math.round(recv.reduce(function (a, e) { return a + (Number(e[k]) || 0); }, 0) / recv.length * 10) / 10 : null; };
+      return {
+        studentId: sid, name: S(s.name), gender: S(s.gender), cardId: S(s.cardId),
+        roleName: S(card.roleName), icon: S(card.icon), groupId: gid, groupName: grp[gid] || '',
+        votes: by('Votes', sid).map(function (v) { var d = dil[S(v.dilemmaId)]; return { dilemma: d ? d.title : S(v.dilemmaId), choice: optText(d, v.choice), reason: S(v.reason) }; }),
+        perspectives: by('Perspectives', sid).map(function (v) { var d = dil[S(v.dilemmaId)]; return { dilemma: d ? d.title : S(v.dilemmaId), stance: S(v.stance), argument: S(v.argument) }; }),
+        topicPick: pick.topicId ? { title: S(pick.topicId) === 'custom' ? S(pick.customTitle) + ' (직접 제안)' : (idea[S(pick.topicId)] || S(pick.topicId)), reason: S(pick.reason) } : null,
+        groupTopic: gt.title ? { title: S(gt.title), problem: S(gt.problem), method: S(gt.method) } : null,
+        plan: plan.career || plan.task ? { career: S(plan.career), task: S(plan.task), idea: S(plan.idea) } : null,
+        submission: sub.summary || sub.solution ? { summary: S(sub.summary), solution: S(sub.solution), slideLink: S(sub.slideLink) } : null,
+        questions: by('Questions', sid).map(function (q) { return { target: grp[S(q.targetGroup)] || S(q.targetGroup), question: S(q.question) }; }),
+        evalsGiven: by('Evaluations', sid).length,
+        peer: recv.length ? { n: recv.length, logic: avg('logic'), creativity: avg('creativity'), feasibility: avg('feasibility'), delivery: avg('delivery'),
+          comments: recv.map(function (e) { return S(e.comment); }).filter(Boolean) } : null,
+        reflection: refl ? { motivation: S(refl.motivation), process: S(refl.process), discovery: S(refl.discovery), competencies: S(refl.competencies),
+          reflection: S(refl.reflection), nextStep: S(refl.nextStep), updatedAt: S(refl.updatedAt) } : null
+      };
+    });
   }
 
   /* ===== 6. 쓰기 액션 ===== */
@@ -457,12 +511,27 @@ var GothamCore = (function () {
       return { result: { ok: true }, changed: ['Evaluations'] };
     },
 
+    reflection: function (db, p) {
+      var u = requireStudent(db, p);
+      if (S(settingsMap(db).reflectionOpen).toUpperCase() === 'N') fail('지금은 활동 기록을 작성할 수 없어요. 선생님께 문의하세요.');
+      upsert(db.Reflections, function (r) { return S(r.studentId) === S(u.st.studentId); },
+        { studentId: S(u.st.studentId), name: S(u.st.name), groupId: S(u.card.groupId), roleKey: S(u.card.roleKey),
+          motivation: clip(p.motivation, 3000), process: clip(p.process, 5000), discovery: clip(p.discovery, 3000),
+          competencies: clip(p.competencies, 3000), reflection: clip(p.reflection, 3000), nextStep: clip(p.nextStep, 2000), updatedAt: now() });
+      return { result: { ok: true }, changed: ['Reflections'] };
+    },
+
     /* --- 교사 전용 --- */
+    adminRecords: function (db, p) {
+      requireAdmin(db, p);
+      return { result: { ok: true, records: buildRecords(db) }, changed: [] };
+    },
+
     adminCheck: function (db, p) { requireAdmin(db, p); return { result: { ok: true }, changed: [] }; },
 
     admin: function (db, p) {
       requireAdmin(db, p);
-      var allowed = ['campTitle', 'currentSession', 'activeDilemmaId', 'voteOpen', 'submitOpen', 'evalOpen', 'presentingGroup', 'dashboardView', 'notice', 'allowUnlisted'];
+      var allowed = ['reflectionOpen', 'campTitle', 'currentSession', 'activeDilemmaId', 'voteOpen', 'submitOpen', 'evalOpen', 'presentingGroup', 'dashboardView', 'notice', 'allowUnlisted'];
       var s = p.settings || {};
       Object.keys(s).forEach(function (k) {
         if (allowed.indexOf(k) < 0) return;
@@ -498,5 +567,5 @@ var GothamCore = (function () {
     }
   }
 
-  return { SCHEMA: SCHEMA, seedDb: seedDb, computeState: computeState, me: me, handle: handle, LETTERS: LETTERS, now: now };
+  return { SCHEMA: SCHEMA, COMPETENCIES: COMPETENCIES, seedDb: seedDb, computeState: computeState, me: me, handle: handle, LETTERS: LETTERS, now: now };
 })();
