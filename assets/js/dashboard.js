@@ -208,7 +208,9 @@ function adminPanel(bg) {
       <div class="col-span-2"><label class="label">크게 띄울 딜레마</label><select class="select" data-k="activeDilemmaId">${st.dilemmas.map((d) => `<option value="${d.dilemmaId}" ${s.activeDilemmaId === d.dilemmaId ? 'selected' : ''}>${d.session}차시 · ${esc(d.title)}</option>`).join('')}</select></div>
       <div class="col-span-2"><label class="label">발표 그룹</label><select class="select" data-k="presentingGroup"><option value="">(없음)</option>${st.groups.map((g) => `<option value="${g.groupId}" ${s.presentingGroup === g.groupId ? 'selected' : ''}>${esc(g.groupName)}</option>`).join('')}</select></div>
     </div>
-    <div class="grid gap-2 mt-3">${yn('voteOpen', '투표 열기')}${yn('submitOpen', '자료 제출 열기')}${yn('evalOpen', '상호 평가 열기')}</div>
+    <div class="grid gap-2 mt-3">${yn('voteOpen', '투표 열기')}${yn('submitOpen', '자료 제출 열기')}${yn('evalOpen', '상호 평가 열기')}
+      <label class="flex items-center justify-between rounded-xl p-3" style="background:var(--surface-2);border:1px solid var(--line)"><b>개인 활동 기록 작성 열기</b><input type="checkbox" data-k="reflectionOpen" ${s.reflectionOpen !== 'N' ? 'checked' : ''} style="width:22px;height:22px"></label></div>
+    <a class="btn btn-navy btn-block mt-3" href="records.html" target="_blank" rel="noopener">📋 학생별 활동 기록 모아보기 (생기부용)</a>
     <label class="label mt-3">학생 화면 공지 (다음 차시 안내)</label>
     <textarea class="textarea" data-k="notice" style="min-height:70px">${esc(s.notice || '')}</textarea>
     <button class="btn btn-gold btn-block mt-3" id="adSave">적용하기</button>
