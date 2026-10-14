@@ -20,7 +20,9 @@ var GothamCore = (function () {
     Dilemmas:     ['dilemmaId', 'session', 'title', 'scenario', 'options', 'isTopic', 'order'],
     Votes:        ['studentId', 'name', 'groupId', 'roleKey', 'dilemmaId', 'choice', 'reason', 'updatedAt'],
     Perspectives: ['studentId', 'name', 'groupId', 'roleKey', 'dilemmaId', 'stance', 'argument', 'updatedAt'],
-    GroupTopics:  ['groupId', 'dilemmaId', 'title', 'problem', 'updatedBy', 'updatedAt'],
+    Topics:       ['topicId', 'roleKey', 'title', 'question', 'dilemmaId', 'realWorld', 'careers', 'order'],
+    TopicPicks:   ['studentId', 'name', 'groupId', 'topicId', 'customTitle', 'reason', 'updatedAt'],
+    GroupTopics:  ['groupId', 'topicId', 'dilemmaId', 'title', 'problem', 'method', 'updatedBy', 'updatedAt'],
     MemberPlans:  ['studentId', 'name', 'groupId', 'roleKey', 'career', 'task', 'idea', 'updatedAt'],
     Submissions:  ['groupId', 'summary', 'solution', 'slideLink', 'updatedBy', 'updatedAt'],
     Questions:    ['id', 'studentId', 'name', 'fromGroup', 'targetGroup', 'question', 'status', 'createdAt'],
@@ -37,59 +39,94 @@ var GothamCore = (function () {
     { key: 'evalOpen',         value: 'N',  note: '상호평가 허용 Y/N' },
     { key: 'presentingGroup',  value: '',   note: '현재 발표 그룹 ID (예: A)' },
     { key: 'dashboardView',    value: 'groups', note: 'groups / vote / topics / present' },
-    { key: 'notice',           value: '다음 2차시에는 오늘의 투표 결과를 내 역할(시민·경찰·행정가·언론인·법조인·의료과학자)의 눈으로 다시 분석하고, 그룹별로 고담시 문제 하나를 골라 진로와 연결된 해결책을 설계합니다.', note: '학생 화면 공지' },
+    { key: 'notice',           value: '다음 2차시에는 오늘의 투표 결과를 우리 역할의 눈으로 다시 분석합니다. 같은 역할 4명이 역할별 예시 탐구 주제를 살펴보고, 공동 토론으로 하나를 정해 심화 탐구를 시작해요.', note: '학생 화면 공지' },
     { key: 'allowUnlisted',    value: 'N',  note: '명렬표에 없는 학번 등록 허용 Y/N' },
     { key: 'adminPin',         value: '0000', note: '교사용 PIN — 반드시 변경하세요 (화면에 노출되지 않음)' }
   ];
 
+  // 그룹 = 역할 (같은 역할 4명이 한 조). groupId 는 역할 코드와 같습니다.
   var GROUPS_SEED = [
-    { groupId: 'A', groupName: '고담 타워',     table: 'A테이블 (교탁 왼쪽 앞)', color: '#F59E0B', motto: '도시의 중심에서 균형을 찾는다' },
-    { groupId: 'B', groupName: '내로우스',      table: 'B테이블 (교탁 오른쪽 앞)', color: '#0EA5E9', motto: '가장 낮은 곳의 목소리를 듣는다' },
-    { groupId: 'C', groupName: '아캄 지구',     table: 'C테이블 (왼쪽 뒤)',     color: '#8B5CF6', motto: '처벌을 넘어 회복을 묻는다' },
-    { groupId: 'D', groupName: '다이아몬드 지구', table: 'D테이블 (오른쪽 뒤)',   color: '#10B981', motto: '내일의 고담을 설계한다' }
+    { groupId: 'CIT', groupName: '고담 시민회의',     table: '1테이블', color: '#F59E0B', motto: '평범한 사람들의 일상을 지킨다' },
+    { groupId: 'GPD', groupName: 'GCPD 수사본부',     table: '2테이블', color: '#3B82F6', motto: '법의 테두리 안에서 도시를 지킨다' },
+    { groupId: 'CTY', groupName: '시청 정책실',       table: '3테이블', color: '#14B8A6', motto: '한정된 자원으로 최선의 도시를 설계한다' },
+    { groupId: 'PRS', groupName: '고담 가제트 편집국', table: '4테이블', color: '#F43F5E', motto: '진실을 기록하고 시민에게 알린다' },
+    { groupId: 'LAW', groupName: '지방검사실',        table: '5테이블', color: '#8B5CF6', motto: '정의와 적법 절차를 수호한다' },
+    { groupId: 'MED', groupName: '웨인 재단 연구소',   table: '6테이블', color: '#10B981', motto: '과학과 의료로 생명을 지킨다' }
   ];
 
   var ROLE_TYPES = [
     { roleKey: 'CIT', roleName: '고담 시민', icon: '🏙️',
       description: '평범한 고담 시민. 안전과 자유 사이에서 하루하루를 살아간다.',
       prompt: '이 결정으로 내 가족과 이웃의 일상은 어떻게 달라질까? 나는 무엇을 감수할 수 있고, 무엇은 절대 양보할 수 없을까?',
-      careerHint: '교육·사회복지, 심리·상담' },
+      careerHint: '교육, 사회복지, 심리·상담, 도시·공동체' },
     { roleKey: 'GPD', roleName: '고담 경찰 (GCPD)', icon: '🚓',
       description: '치안과 법 집행을 책임진다. 자경단과 협력할지 고민한다.',
       prompt: '범죄를 막는 효과와 적법한 절차 중 무엇이 더 무거운가? 경찰에 대한 시민의 신뢰는 어떻게 지킬 수 있을까?',
-      careerHint: '경찰·보안, 공학(보안기술)' },
+      careerHint: '경찰·보안, 범죄학, 보안기술' },
     { roleKey: 'CTY', roleName: '시 행정가 (시청)', icon: '🏛️',
       description: '예산과 정책을 결정한다. 한정된 자원을 어디에 쓸지 판단한다.',
       prompt: '이 선택에 드는 비용과 혜택은 누구에게 돌아가는가? 장기적으로 고담시 전체에 가장 이로운 정책은 무엇일까?',
-      careerHint: '행정·정책, 경제·경영' },
+      careerHint: '행정·정책, 경제·경영, 도시계획' },
     { roleKey: 'PRS', roleName: '언론인 (고담 가제트)', icon: '📰',
       description: '진실 보도와 공공의 이익 사이에서 균형을 고민한다.',
       prompt: '시민은 무엇을 알 권리가 있는가? 진실을 알리는 것이 혼란을 낳는다면 그래도 보도해야 할까?',
-      careerHint: '미디어·언론, 콘텐츠 제작' },
+      careerHint: '미디어·언론, 콘텐츠 제작, 광고·홍보' },
     { roleKey: 'LAW', roleName: '법조인 (지방검사실)', icon: '⚖️',
       description: '법치와 적법 절차, 인권을 수호한다.',
       prompt: '이 행동은 법과 인권의 원칙에 맞는가? 예외를 한 번 허용하면 어떤 선례가 남을까?',
-      careerHint: '법학·인권, 정치·외교' },
+      careerHint: '법학·인권, 정치·외교, 경찰행정' },
     { roleKey: 'MED', roleName: '의료·과학자 (웨인 재단)', icon: '🧪',
       description: '시민의 건강과 생명, 기술의 윤리적 사용을 다룬다.',
       prompt: '생명과 건강의 관점에서 무엇이 최선인가? 기술은 누구를 위해, 어디까지 쓰여야 할까?',
-      careerHint: '보건·의료, 공학·IT' }
+      careerHint: '보건·의료, 생명과학, 공학·IT, 뇌과학' }
   ];
 
-  // 24장 신분증 카드: 역할 6종 × 그룹 4개. 카드번호 = 역할코드-번호 (예: GPD-3 → C조 2번 좌석)
+  // 24장 신분증 카드: 역할 6종 × 4장. 같은 역할 4명이 한 조. (예: GPD-3 → GCPD 수사본부 3번 좌석)
+  var CARDS_PER_ROLE = 4;
   function buildRoleCards() {
     var cards = [];
-    GROUPS_SEED.forEach(function (g, gi) {
-      ROLE_TYPES.forEach(function (r, ri) {
+    ROLE_TYPES.forEach(function (r) {
+      for (var n = 1; n <= CARDS_PER_ROLE; n++) {
         cards.push({
-          cardId: r.roleKey + '-' + (gi + 1), roleKey: r.roleKey, roleName: r.roleName,
-          groupId: g.groupId, seat: String(ri + 1), icon: r.icon,
+          cardId: r.roleKey + '-' + n, roleKey: r.roleKey, roleName: r.roleName,
+          groupId: r.roleKey, seat: String(n), icon: r.icon,
           description: r.description, prompt: r.prompt, careerHint: r.careerHint
         });
-      });
+      }
     });
     return cards;
   }
+
+  // 역할별 예시 탐구 주제 — 그룹은 이 중 하나를 고르거나 직접 제안한 주제로 공동 토론 후 결정합니다.
+  var T = function (id, rk, order, title, question, d, real, careers) {
+    return { topicId: id, roleKey: rk, order: String(order), title: title, question: question, dilemmaId: d, realWorld: real, careers: careers };
+  };
+  var TOPICS_SEED = [
+    T('CIT-T1', 'CIT', 1, '두려움의 도시, 시민의 안전감은 어떻게 회복될까', '범죄 불안이 공동체 신뢰를 무너뜨릴 때, 시민이 스스로 만들 수 있는 안전망은 무엇인가?', 'D1', '범죄예방 환경설계(CPTED), 마을 공동체 순찰, 안심귀갓길', '도시·공동체, 사회복지'),
+    T('CIT-T2', 'CIT', 2, '자경단에 박수 치는 시민 — 정의감인가, 위험인가', '법이 무력할 때 사적 제재를 지지하는 여론은 정당한가?', 'D1', '온라인 신상 공개 사이트, 사적 제재 여론 조사', '심리·상담, 사회학'),
+    T('CIT-T3', 'CIT', 3, '범죄 피해자와 가족을 위한 사회 안전망', '피해 회복을 위해 국가와 공동체는 무엇을 책임져야 하는가?', 'D4', '범죄피해자 지원 제도, 트라우마 상담', '사회복지, 심리·상담'),
+    T('CIT-T4', 'CIT', 4, '청소년이 범죄 조직에 빠지지 않는 도시', '빈곤 지역 청소년에게 필요한 것은 처벌인가, 기회인가?', 'D4', '청소년 범죄 예방 프로그램, 방과후 지역 돌봄', '교육, 청소년 지도'),
+    T('GPD-T1', 'GPD', 1, '예측 치안 AI, 범죄를 막을까 차별을 만들까', '범죄 발생을 예측하는 AI를 순찰에 활용해도 되는가?', 'D2', '해외 예측 치안 도입 사례와 알고리즘 편향 논란', '경찰·보안, 데이터 분석'),
+    T('GPD-T2', 'GPD', 2, '경찰과 자경단의 협력, 어디까지 허용될까', '공권력이 민간의 힘을 빌릴 때 책임은 누가 지는가?', 'D1', '민간 경비, 시민 제보·포상 제도, 자율방범대', '경찰행정, 범죄학'),
+    T('GPD-T3', 'GPD', 3, '모든 시민 감시 장치 — 수사를 위한 정보 활용의 한계', '생명을 구하기 위한 위치·통신 정보 수집은 어디까지 정당한가?', 'D2', 'CCTV 얼굴인식, 통신자료 조회 논란', '보안기술, 법학'),
+    T('GPD-T4', 'GPD', 4, '부패한 조직을 바꾸는 내부고발과 감찰', '조직 내부의 부정을 고발하는 사람은 어떻게 보호되어야 하는가?', 'D5', '공익신고자 보호 제도', '경찰행정, 공공기관'),
+    T('CTY-T1', 'CTY', 1, '한정된 예산 — 치안 강화인가, 복지·예방인가', '범죄를 줄이는 데 더 효과적이고 공정한 예산 배분은 무엇인가?', 'D4', '주민참여예산제, 지자체 안전·복지 예산', '행정·정책, 경제'),
+    T('CTY-T2', 'CTY', 2, '낙후 지역 재개발과 젠트리피케이션', '도시를 개발하면 원래 살던 주민은 어디로 가는가?', 'D4', '도시 재생 사업, 젠트리피케이션 사례', '도시계획, 부동산·경제'),
+    T('CTY-T3', 'CTY', 3, '위기 상황의 결정 — 다수를 위해 소수를 희생해도 되는가', '재난·테러 상황에서 공리주의적 판단의 한계는 무엇인가?', 'D3', '재난 대응 매뉴얼, 트롤리 딜레마', '행정·정책, 위기관리'),
+    T('CTY-T4', 'CTY', 4, '스마트시티 데이터 행정과 시민 프라이버시', '편리한 도시를 위한 데이터 수집에 시민은 어디까지 동의해야 하는가?', 'D2', '스마트시티 플랫폼, 개인정보 보호법', '도시계획, 공학·IT'),
+    T('PRS-T1', 'PRS', 1, '진실인가, 희망인가 — 알 권리와 공익', '진실 보도가 사회 혼란을 낳는다면 그래도 보도해야 하는가?', 'D5', '공인 보도와 고귀한 거짓말 논쟁', '미디어·언론, 철학'),
+    T('PRS-T2', 'PRS', 2, '테러범의 메시지를 그대로 보도해야 할까', '공포를 퍼뜨리려는 범죄자에게 언론은 확성기가 되어도 되는가?', 'D3', '재난·테러 보도 준칙', '미디어·언론, 방송'),
+    T('PRS-T3', 'PRS', 3, '가짜뉴스와 공포의 확산', 'SNS 시대에 도시의 불안은 어떻게 증폭되고, 어떻게 막을 수 있는가?', 'D2', '재난 시 허위정보 확산 사례, 팩트체크', '콘텐츠 제작, 데이터 저널리즘'),
+    T('PRS-T4', 'PRS', 4, '언론은 영웅을 어떻게 그려야 하나', '자경단을 영웅이나 범죄자로 그리는 보도는 여론을 어떻게 바꾸는가?', 'D1', '프레이밍 효과, 사적 제재 보도 사례', '광고·홍보, 미디어 심리'),
+    T('LAW-T1', 'LAW', 1, '사적 제재는 처벌해야 하는가', '정당방위·자력구제와 사적 제재의 경계는 어디인가?', 'D1', '정당방위 인정 판례, 사적 제재 처벌 사례', '법학, 인권'),
+    T('LAW-T2', 'LAW', 2, '불법으로 얻은 증거로 범인을 처벌할 수 있을까', '진실 발견과 적법 절차가 충돌하면 무엇이 우선인가?', 'D2', '위법수집증거 배제 원칙', '법학, 경찰행정'),
+    T('LAW-T3', 'LAW', 3, '처벌인가, 치료인가 — 정신질환 범죄자의 책임', '판단 능력이 없는 상태의 범죄에 형사 책임을 물을 수 있는가?', 'D4', '심신미약 감경 논란, 치료감호 제도', '법학, 정신건강'),
+    T('LAW-T4', 'LAW', 4, '국가 비상사태와 기본권 제한', '테러 위협 앞에서 자유와 권리는 어디까지 제한될 수 있는가?', 'D2', '테러방지법, 비상사태 선포 사례', '정치·외교, 헌법'),
+    T('MED-T1', 'MED', 1, '기술은 누구 편인가 — 이중 용도 기술의 윤리', '사람을 지키려 만든 기술이 무기가 될 때 과학자는 어떤 책임을 지는가?', 'D2', '드론·AI의 군사적 활용 논쟁, 연구 윤리', '공학·IT, 연구 윤리'),
+    T('MED-T2', 'MED', 2, '테러와 재난 앞의 도시 공중보건', '대규모 위기에서 한정된 의료 자원은 누구에게 먼저 가야 하는가?', 'D3', '재난 의료 중증도 분류(트리아지), 감염병 대응', '보건·의료, 간호'),
+    T('MED-T3', 'MED', 3, '범죄자의 뇌? 신경과학과 자유의지', '뇌 과학이 범죄 성향을 설명한다면 처벌의 의미는 달라지는가?', 'D1', '신경법학, 뇌 영상 증거 논쟁', '뇌과학, 생명과학'),
+    T('MED-T4', 'MED', 4, '감시 AI 알고리즘의 편향과 공정성', '얼굴인식 AI가 특정 집단을 더 자주 오인한다면 써도 되는가?', 'D2', '얼굴인식 오인식 연구, AI 윤리 가이드라인', '공학·IT, 데이터 과학')
+  ];
 
   var STUDENTS_SEED = [
     ['20101', '김민준', '남'], ['20102', '이서연', '여'], ['20103', '박도윤', '남'], ['20104', '최지우', '여'],
@@ -130,6 +167,7 @@ var GothamCore = (function () {
     db.Roles = buildRoleCards();
     db.Students = clone(STUDENTS_SEED);
     db.Dilemmas = clone(DILEMMAS_SEED);
+    db.Topics = clone(TOPICS_SEED);
     return db;
   }
 
@@ -219,7 +257,19 @@ var GothamCore = (function () {
 
     var topics = {};
     db.GroupTopics.forEach(function (t) {
-      topics[S(t.groupId)] = { dilemmaId: S(t.dilemmaId), title: S(t.title), problem: S(t.problem), updatedBy: S(t.updatedBy), updatedAt: S(t.updatedAt) };
+      topics[S(t.groupId)] = { topicId: S(t.topicId), dilemmaId: S(t.dilemmaId), title: S(t.title), problem: S(t.problem), method: S(t.method), updatedBy: S(t.updatedBy), updatedAt: S(t.updatedAt) };
+    });
+    var topicIdeas = (db.Topics || []).filter(function (t) { return S(t.topicId); }).map(function (t) {
+      return { topicId: S(t.topicId), roleKey: S(t.roleKey), title: S(t.title), question: S(t.question), dilemmaId: S(t.dilemmaId),
+        realWorld: S(t.realWorld), careers: S(t.careers), order: Number(t.order) || 99 };
+    }).sort(function (a, b) { return a.order - b.order; });
+    var topicPicks = {};
+    (db.TopicPicks || []).forEach(function (p) {
+      var g = S(p.groupId), tid = S(p.topicId); if (!g || !tid) return;
+      topicPicks[g] = topicPicks[g] || {};
+      var key = tid === 'custom' ? 'custom:' + S(p.customTitle) : tid;
+      var e = topicPicks[g][key] = topicPicks[g][key] || { topicId: tid, customTitle: S(p.customTitle), count: 0, names: [], reasons: [] };
+      e.count++; e.names.push(S(p.name)); if (S(p.reason)) e.reasons.push({ name: S(p.name), reason: S(p.reason) });
     });
     var rtName = {}; roleTypes.forEach(function (r) { rtName[r.roleKey] = r; });
     var plans = db.MemberPlans.map(function (p) {
@@ -255,7 +305,7 @@ var GothamCore = (function () {
     return {
       ok: true, serverTime: now(), settings: pub, groups: groups, roles: roles, roleTypes: roleTypes, dilemmas: dilemmas,
       votes: votes, registeredCount: Object.keys(byCard).length, rosterCount: db.Students.length,
-      topics: topics, plans: plans, submissions: submissions, questions: questions, evalSummary: evalSummary, perspectives: perspectives
+      topics: topics, topicIdeas: topicIdeas, topicPicks: topicPicks, plans: plans, submissions: submissions, questions: questions, evalSummary: evalSummary, perspectives: perspectives
     };
   }
 
@@ -274,6 +324,7 @@ var GothamCore = (function () {
       if (S(v.studentId) === sid) evals[S(v.targetGroup)] = { logic: Number(v.logic), creativity: Number(v.creativity), feasibility: Number(v.feasibility), delivery: Number(v.delivery), comment: S(v.comment) };
     });
     var plan = find(db.MemberPlans, function (p) { return S(p.studentId) === sid; });
+    var pick = find(db.TopicPicks || [], function (p) { return S(p.studentId) === sid; });
     return {
       ok: true, registered: true,
       student: { studentId: sid, name: S(st.name), gender: S(st.gender), cardId: S(st.cardId) },
@@ -281,7 +332,8 @@ var GothamCore = (function () {
         description: S(card.description), prompt: S(card.prompt), careerHint: S(card.careerHint) },
       group: { groupId: S(group.groupId), groupName: S(group.groupName), table: S(group.table), color: S(group.color) || '#F59E0B', motto: S(group.motto) },
       votes: votes, perspectives: persp, evals: evals,
-      plan: plan ? { career: S(plan.career), task: S(plan.task), idea: S(plan.idea) } : null
+      plan: plan ? { career: S(plan.career), task: S(plan.task), idea: S(plan.idea) } : null,
+      topicPick: pick ? { topicId: S(pick.topicId), customTitle: S(pick.customTitle), reason: S(pick.reason) } : null
     };
   }
 
@@ -335,12 +387,27 @@ var GothamCore = (function () {
       return { result: { ok: true }, changed: ['Perspectives'] };
     },
 
+    topicPick: function (db, p) {
+      var u = requireStudent(db, p);
+      var tid = S(p.topicId);
+      if (!tid) fail('추천할 주제를 고르세요.');
+      if (tid === 'custom') { if (S(p.customTitle).length < 2) fail('직접 제안할 주제를 입력하세요.'); }
+      else if (!find(db.Topics || [], function (t) { return S(t.topicId) === tid; })) fail('존재하지 않는 주제입니다.');
+      upsert(db.TopicPicks, function (x) { return S(x.studentId) === S(u.st.studentId); },
+        { studentId: S(u.st.studentId), name: S(u.st.name), groupId: S(u.card.groupId), topicId: tid,
+          customTitle: tid === 'custom' ? clip(p.customTitle, 200) : '', reason: clip(p.reason, 500), updatedAt: now() });
+      return { result: { ok: true }, changed: ['TopicPicks'] };
+    },
+
     groupTopic: function (db, p) {
       var u = requireStudent(db, p);
-      if (!S(p.dilemmaId)) fail('공통 딜레마를 선택하세요.');
+      var tid = S(p.topicId) || 'custom';
+      var idea = find(db.Topics || [], function (t) { return S(t.topicId) === tid; });
+      if (tid !== 'custom' && !idea) fail('존재하지 않는 주제입니다.');
       if (!S(p.title)) fail('그룹 탐구 주제(제목)를 입력하세요.');
       upsert(db.GroupTopics, function (t) { return S(t.groupId) === S(u.card.groupId); },
-        { groupId: S(u.card.groupId), dilemmaId: S(p.dilemmaId), title: clip(p.title, 200), problem: clip(p.problem, 2000),
+        { groupId: S(u.card.groupId), topicId: tid, dilemmaId: S(p.dilemmaId) || (idea ? S(idea.dilemmaId) : ''),
+          title: clip(p.title, 200), problem: clip(p.problem, 2000), method: clip(p.method, 3000),
           updatedBy: S(u.st.name), updatedAt: now() });
       return { result: { ok: true }, changed: ['GroupTopics'] };
     },
