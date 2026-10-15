@@ -54,8 +54,8 @@ function settingsSig() {
   const s = App.state.settings;
   return [s.currentSession, s.voteOpen, s.submitOpen, s.evalOpen, s.presentingGroup, s.activeDilemmaId, s.reflectionOpen].join('|');
 }
-async function refreshMe() { try { const m = await Api.get('me', App.cred); if (m.registered) App.me = m; } catch (e) {} }
-async function refreshState() { try { App.state = await Api.get('state'); } catch (e) {} }
+async function refreshMe() { if (document.hidden) return; try { const m = await Api.get('me', App.cred); if (m.registered) App.me = m; } catch (e) {} }
+async function refreshState() { if (document.hidden) return; try { App.state = await Api.get('state'); } catch (e) {} }
 
 function logout() {
   if (!confirm('이 기기에서 나갈까요? (기록은 서버에 그대로 남아 있어요)')) return;
@@ -692,3 +692,4 @@ async function submitAction(act, btn) {
   } catch (e) { toast(e.message, 'err'); }
   finally { setBusy(btn, false); }
 }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
