@@ -81,7 +81,22 @@ const Mock = (() => {
 
 const Api = (() => {
   const URL = (window.GOTHAM_CONFIG && window.GOTHAM_CONFIG.API_URL || '').trim();
-  const DEMO = !URL;
+  // 주소 끝에 ?demo=1 을 붙이면 실제 시트와 상관없는 미리보기(데모) 모드로 열립니다.
+  const FORCE_DEMO = new URLSearchParams(location.search).has('demo');
+  const DEMO = !URL || FORCE_DEMO;
+  if (FORCE_DEMO) {
+    document.addEventListener('DOMContentLoaded', () => {
+      // 같은 사이트의 다른 화면으로 이동해도 미리보기 모드가 유지되도록 링크에 ?demo=1 추가
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest && e.target.closest('a[href$=".html"]');
+        if (a && !/^https?:/i.test(a.getAttribute('href'))) a.setAttribute('href', a.getAttribute('href') + '?demo=1');
+      }, true);
+      const bar = document.createElement('div');
+      bar.textContent = '👀 미리보기 모드 — 이 화면에서 한 활동은 실제 시트에 저장되지 않아요 (이 브라우저에만 임시 저장)';
+      bar.style.cssText = 'background:#F59E0B;color:#1F1300;font-weight:800;font-size:13px;text-align:center;padding:6px 10px';
+      document.body.prepend(bar);
+    });
+  }
   async function unwrap(res) {
     if (!res || res.ok === false) throw new Error((res && res.error) || '요청에 실패했어요.');
     return res;
