@@ -54,8 +54,8 @@ function settingsSig() {
   const s = App.state.settings;
   return [s.currentSession, s.voteOpen, s.submitOpen, s.evalOpen, s.presentingGroup, s.activeDilemmaId, s.reflectionOpen].join('|');
 }
-async function refreshMe() { if (document.hidden) return; try { const m = await Api.get('me', App.cred); if (m.registered) App.me = m; } catch (e) {} }
-async function refreshState() { if (document.hidden) return; try { App.state = await Api.get('state'); } catch (e) {} }
+async function refreshMe() { try { const m = await Api.get('me', App.cred); if (m.registered) App.me = m; } catch (e) {} }
+async function refreshState() { try { App.state = await Api.get('state'); } catch (e) {} }
 
 function logout() {
   if (!confirm('이 기기에서 나갈까요? (기록은 서버에 그대로 남아 있어요)')) return;
@@ -402,6 +402,34 @@ function recFieldHTML(r, open) {
   </section>`;
 }
 
+/* 딜레마 투표 카드 (1·2차시 공용) */
+function voteHeaderHTML(title) {
+  const open = App.state.settings.voteOpen === 'Y';
+  return `<div class="flex items-center justify-between mb-2 px-1">
+    <h2 class="text-lg font-extrabold">${title}</h2>
+    ${open ? '<span class="badge badge-ok"><span class="live-dot" style="background:#16A34A"></span> 투표 진행 중</span>' : '<span class="badge badge-danger">투표 마감</span>'}
+  </div>`;
+}
+function voteCardHTML(d, label) {
+  const s = App.state.settings, open = s.voteOpen === 'Y';
+  const mine = App.me.votes[d.dilemmaId], cur = App.picks[d.dilemmaId] ?? mine?.choice;
+  const active = s.activeDilemmaId === d.dilemmaId;
+  return `<article class="card mb-4" style="${active ? 'border:2px solid var(--gold)' : ''}">
+    <div class="flex items-center gap-2 flex-wrap"><span class="badge">${label}</span>${active ? '<span class="badge badge-gold">📽 지금 함께 보는 중</span>' : ''}${mine ? '<span class="badge badge-ok">✓ 투표 완료</span>' : ''}</div>
+    <h3 class="text-lg font-extrabold mt-2">${esc(d.title)}</h3>
+    <p class="ink2 mt-1">${esc(d.scenario)}</p>
+    <div class="grid gap-2 mt-4">${d.options.map((o, i) => `
+      <button class="opt ${cur === LETTERS[i] ? 'sel' : ''}" data-act="pick" data-d="${d.dilemmaId}" data-c="${LETTERS[i]}" ${open ? '' : 'disabled'}>
+        <span class="L" style="background:${OPT_COLORS[i]}">${LETTERS[i]}</span><span>${esc(o)}</span></button>`).join('')}
+    </div>
+    <label class="label mt-3" for="reason-${d.dilemmaId}">선택 이유 <span class="muted font-normal">(한 줄이라도 좋아요)</span></label>
+    <textarea id="reason-${d.dilemmaId}" class="textarea" style="min-height:70px" placeholder="왜 이렇게 선택했나요?" ${open ? '' : 'disabled'}>${esc(mine?.reason || '')}</textarea>
+    <button class="btn btn-gold btn-block mt-3" data-act="vote" data-d="${d.dilemmaId}" ${open ? '' : 'disabled'}>${mine ? '선택 변경하기' : '투표하기'}</button>
+    <div class="divider"></div>
+    <div data-live="voteResult" data-d="${d.dilemmaId}"></div>
+  </article>`;
+}
+
 /* ---------- 1차시 ---------- */
 function tabS1() {
   const st = App.state, s = st.settings, open = s.voteOpen === 'Y';
@@ -418,28 +446,8 @@ function tabS1() {
     </div>
   </section>
 
-  <div class="flex items-center justify-between mb-2 px-1">
-    <h2 class="text-lg font-extrabold">딜레마 투표</h2>
-    ${open ? '<span class="badge badge-ok"><span class="live-dot" style="background:#16A34A"></span> 투표 진행 중</span>' : '<span class="badge badge-danger">투표 마감</span>'}
-  </div>
-  ${dils.map((d, idx) => {
-    const mine = App.me.votes[d.dilemmaId], cur = App.picks[d.dilemmaId] ?? mine?.choice;
-    const active = s.activeDilemmaId === d.dilemmaId;
-    return `<article class="card mb-4" style="${active ? 'border:2px solid var(--gold)' : ''}">
-      <div class="flex items-center gap-2 flex-wrap"><span class="badge">딜레마 ${idx + 1}</span>${active ? '<span class="badge badge-gold">📽 지금 함께 보는 중</span>' : ''}${mine ? '<span class="badge badge-ok">✓ 투표 완료</span>' : ''}</div>
-      <h3 class="text-lg font-extrabold mt-2">${esc(d.title)}</h3>
-      <p class="ink2 mt-1">${esc(d.scenario)}</p>
-      <div class="grid gap-2 mt-4">${d.options.map((o, i) => `
-        <button class="opt ${cur === LETTERS[i] ? 'sel' : ''}" data-act="pick" data-d="${d.dilemmaId}" data-c="${LETTERS[i]}" ${open ? '' : 'disabled'}>
-          <span class="L" style="background:${OPT_COLORS[i]}">${LETTERS[i]}</span><span>${esc(o)}</span></button>`).join('')}
-      </div>
-      <label class="label mt-3" for="reason-${d.dilemmaId}">선택 이유 <span class="muted font-normal">(한 줄이라도 좋아요)</span></label>
-      <textarea id="reason-${d.dilemmaId}" class="textarea" style="min-height:70px" placeholder="왜 이렇게 선택했나요?" ${open ? '' : 'disabled'}>${esc(mine?.reason || '')}</textarea>
-      <button class="btn btn-gold btn-block mt-3" data-act="vote" data-d="${d.dilemmaId}" ${open ? '' : 'disabled'}>${mine ? '선택 변경하기' : '투표하기'}</button>
-      <div class="divider"></div>
-      <div data-live="voteResult" data-d="${d.dilemmaId}"></div>
-    </article>`;
-  }).join('')}
+  ${voteHeaderHTML('딜레마 투표')}
+  ${dils.map((d, idx) => voteCardHTML(d, '딜레마 ' + (idx + 1))).join('')}
 
   <section class="card" style="background:var(--sky-soft);border-color:transparent">
     <div class="eyebrow" style="color:#0369A1">NEXT · 다음 차시 안내</div>
@@ -456,6 +464,7 @@ function tabS2() {
   const myP = m.perspectives[pvD] || {};
   const plan = m.plan || {};
   const ideas = st.topicIdeas.filter((x) => x.roleKey === m.role.roleKey);
+  const s2dils = st.dilemmas.filter((d) => d.session === 2);
   return `
   <section class="card mb-4">
     <div class="eyebrow">STEP 1 · 결과 분석</div>
@@ -463,6 +472,9 @@ function tabS2() {
     <p class="muted text-sm">전체 결과와 <b>우리 조(같은 역할)</b> 친구들의 선택을 비교해 보세요. 왜 차이가 날까요?</p>
     <div data-live="analysis" class="mt-2"></div>
   </section>
+
+  ${s2dils.length ? `${voteHeaderHTML('2차시 새로운 딜레마 투표')}
+  ${s2dils.map((d, idx) => voteCardHTML(d, '2차시 딜레마 ' + (idx + 1))).join('')}` : ''}
 
   <section class="card mb-4">
     <div class="eyebrow">STEP 2 · 역할별 관점 탐구</div>
@@ -480,7 +492,7 @@ function tabS2() {
 
   <section class="card mb-4">
     <div class="eyebrow">STEP 3 · 역할별 예시 탐구 주제</div>
-    <h2>${m.role.icon} ${esc(m.group.groupName)} 우리 조가 탐구할 수 있는 주제</h2>
+    <h2>${m.role.icon} ${esc(m.group.groupName)}가 탐구할 수 있는 주제</h2>
     <p class="muted text-sm">같은 역할 4명이 공통의 관심사를 탐구해요. 예시 주제를 읽고 마음에 드는 주제를 <b>한 명당 하나</b> 추천하세요. 새로운 주제를 직접 제안해도 좋아요.</p>
     <label class="label mt-3" for="tp-reason">추천 이유 <span class="muted font-normal">(내 관심사·진로와 어떻게 연결되나요?)</span></label>
     <input id="tp-reason" class="input" maxlength="300" placeholder="예: 데이터 과학자가 꿈이라 알고리즘 편향에 관심이 있어요" value="${esc(m.topicPick?.reason || '')}">
@@ -692,4 +704,3 @@ async function submitAction(act, btn) {
   } catch (e) { toast(e.message, 'err'); }
   finally { setBusy(btn, false); }
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
