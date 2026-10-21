@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>다크 나이트 세계관</title>
+<meta name="description" content="연합 캠프 「고담시의 선택」 사전 자료 — 영화 〈다크 나이트〉(2008)의 세계관, 인물, 줄거리와 주요 장면 영상">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0e12; --bg2:#13161c; --card:#181c24; --line:#2a303b;
+  --text:#e9ecf1; --muted:#9aa3b2; --gold:#f2c14e; --gold-soft:rgba(242,193,78,.12);
+  --red:#e5484d; --red-soft:rgba(229,72,77,.12); --blue:#5b9cf5; --blue-soft:rgba(91,156,245,.12);
+  --green:#3fb37f; --purple:#a78bfa; --purple-soft:rgba(167,139,250,.12);
+  --radius:16px; --max:960px;
+}
+:root[data-theme="light"]{
+  --bg:#f5f3ee; --bg2:#ebe8e1; --card:#ffffff; --line:#dcd7cc;
+  --text:#1b1d22; --muted:#5d6472; --gold:#a86f00; --gold-soft:rgba(168,111,0,.10);
+  --red:#c9302c; --red-soft:rgba(201,48,44,.08); --blue:#2563c9; --blue-soft:rgba(37,99,201,.08);
+  --green:#1d8a5a; --purple:#6d4fd1; --purple-soft:rgba(109,79,209,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Noto Sans KR",system-ui,sans-serif;line-height:1.75;font-size:16px;-webkit-font-smoothing:antialiased;word-break:keep-all}
+a{color:var(--gold)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 16px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;height:52px}
+.brand{font-weight:900;letter-spacing:-.02em;white-space:nowrap}
+.brand span{color:var(--gold)}
+.toc{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1}
+.toc::-webkit-scrollbar{display:none}
+.toc a{color:var(--muted);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:999px;white-space:nowrap}
+.toc a:hover,.toc a.on{color:var(--text);background:var(--card)}
+.theme{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;width:36px;height:36px;cursor:pointer;flex-shrink:0}
+
+/* hero */
+.hero{padding:72px 0 48px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(600px 280px at 75% 10%,var(--gold-soft),transparent 70%),radial-gradient(500px 260px at 10% 90%,var(--red-soft),transparent 70%);pointer-events:none}
+.kicker{display:inline-block;font-size:13px;font-weight:700;color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:2px 12px;margin-bottom:16px}
+h1{font-family:"Noto Serif KR",serif;font-size:clamp(34px,7vw,60px);line-height:1.2;margin:0 0 16px;letter-spacing:-.03em}
+.hero p.lead{font-size:clamp(16px,2.4vw,19px);color:var(--muted);max-width:640px;margin:0}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:32px}
+.fact{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.fact b{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.fact span{font-weight:700}
+
+/* sections */
+section{padding:48px 0;border-top:1px solid var(--line)}
+.sec-no{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.08em}
+h2{font-size:clamp(24px,4vw,32px);line-height:1.35;margin:4px 0 12px;letter-spacing:-.02em}
+h3{font-size:19px;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 24px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.card p{margin:0}
+.card .ico{font-size:28px;line-height:1;margin-bottom:10px}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:6px;padding:1px 8px;margin-bottom:8px}
+.t-gold{background:var(--gold-soft);color:var(--gold)}
+.t-red{background:var(--red-soft);color:var(--red)}
+.t-blue{background:var(--blue-soft);color:var(--blue)}
+.t-purple{background:var(--purple-soft);color:var(--purple)}
+.person{border-top:4px solid var(--c,var(--line))}
+.person .role{font-size:13px;color:var(--muted);margin-bottom:8px}
+.person ul{margin:10px 0 0;padding-left:18px;color:var(--muted);font-size:15px}
+
+/* triangle */
+.tri{display:grid;grid-template-columns:1fr;gap:12px;margin:8px 0 0}
+.tri svg{width:100%;max-width:560px;height:auto;display:block;margin:0 auto}
+.tri text{font-family:"Noto Sans KR",sans-serif}
+
+/* timeline */
+.timeline{position:relative;margin-top:8px}
+.act{font-size:13px;font-weight:900;color:var(--muted);letter-spacing:.06em;margin:28px 0 12px}
+.step{position:relative;padding:0 0 22px 30px}
+.step::before{content:"";position:absolute;left:8px;top:8px;bottom:-8px;width:2px;background:var(--line)}
+.step:last-child::before{display:none}
+.step::after{content:"";position:absolute;left:2px;top:6px;width:14px;height:14px;border-radius:50%;background:var(--bg);border:3px solid var(--dot,var(--muted))}
+.step h3{font-size:17px}
+.step p{margin:0;color:var(--muted)}
+.step.key{--dot:var(--gold)}
+.step.key h3{color:var(--gold)}
+
+/* scene */
+.scene{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:6px 0 28px 30px}
+.scene-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--bg2)}
+.scene-no{background:var(--gold);color:#111;font-weight:900;border-radius:8px;padding:0 10px;font-size:14px;white-space:nowrap}
+.scene-head h4{margin:0;font-size:17px}
+.video{position:relative;aspect-ratio:16/9;background:#000;cursor:pointer}
+.video img{width:100%;height:100%;object-fit:cover;display:block;opacity:.75;transition:opacity .2s}
+.video:hover img{opacity:.95}
+.video .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.video .play i{width:72px;height:72px;border-radius:50%;background:rgba(229,72,77,.92);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:28px;padding-left:5px;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.scene-body{padding:16px 18px 18px}
+.scene-body .watch{font-weight:700;margin:0 0 6px}
+.scene-body ul{margin:0 0 12px;padding-left:18px}
+.scene-body li{margin:2px 0}
+.q{background:var(--gold-soft);border-left:4px solid var(--gold);border-radius:0 10px 10px 0;padding:10px 14px;font-size:15px}
+.q b{color:var(--gold)}
+.ext{display:inline-block;margin-top:10px;font-size:13px;color:var(--muted)}
+
+/* quotes */
+.quote{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+.quote blockquote{margin:0 0 10px;font-family:"Noto Serif KR",serif;font-size:19px;line-height:1.6}
+.quote cite{font-style:normal;color:var(--muted);font-size:14px}
+.quote p{margin:10px 0 0;font-size:15px;color:var(--muted)}
+
+/* themes */
+.theme-card h3{display:flex;gap:8px;align-items:center}
+.theme-card .vs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.theme-card .vs div{background:var(--bg2);border-radius:10px;padding:10px;font-size:14px}
+.theme-card .vs b{display:block;font-size:13px}
+.theme-card .ask{font-weight:700;font-size:15px;margin-top:10px}
+
+/* role table */
+.roles{width:100%;border-collapse:collapse;font-size:15px}
+.roles th,.roles td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.roles th{font-size:13px;color:var(--muted);font-weight:500}
+.roles td:first-child{white-space:nowrap;font-weight:700}
+.table-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:4px 10px}
+
+footer{padding:40px 0 60px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+footer p{margin:4px 0}
+
+@media (max-width:600px){
+  .scene{margin-left:0}
+  .brand small{display:none}
+  .theme-card .vs{grid-template-columns:1fr}
+}
+@media print{
+  .top,.video,.theme{display:none}
+  body{background:#fff;color:#000}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">🦇 <span>고담</span> 브리핑</div>
+    <nav class="toc" id="toc">
+      <a href="#world">고담시</a>
+      <a href="#people">인물</a>
+      <a href="#story">줄거리·장면</a>
+      <a href="#quotes">명대사</a>
+      <a href="#ethics">윤리 쟁점</a>
+      <a href="#roles">역할별 관전</a>
+    </nav>
+    <button class="theme" id="themeBtn" aria-label="밝은/어두운 테마 바꾸기">☾</button>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="wrap" style="position:relative">
+      <span class="kicker">연합 캠프 「고담시의 선택」 사전 자료</span>
+      <h1>다크 나이트의 세계,<br>고담시에 오신 것을 환영합니다</h1>
+      <p class="lead">범죄와 부패에 지친 도시. 법을 지키는 사람, 법 밖에서 싸우는 사람, 그리고 모든 규칙을 비웃는 사람이 한 도시에서 부딪칩니다. 여러분은 이 도시의 시민이자 경찰, 행정가, 언론인, 법조인, 과학자가 되어 <b>"무엇이 옳은 선택인가?"</b>를 고민하게 됩니다.</p>
+      <div class="facts">
+        <div class="fact"><b>작품</b><span>〈다크 나이트〉 (2008)</span></div>
+        <div class="fact"><b>감독</b><span>크리스토퍼 놀란</span></div>
+        <div class="fact"><b>시리즈</b><span>다크 나이트 3부작 중 2편</span></div>
+        <div class="fact"><b>핵심 질문</b><span>질서 vs 혼돈</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. WORLD -->
+  <section id="world">
+    <div class="wrap">
+      <div class="sec-no">01 · WORLD</div>
+      <h2>고담시는 어떤 도시일까?</h2>
+      <p class="sub">고담은 상상 속 도시지만, 실제 대도시의 문제를 그대로 닮았습니다. 놀란 감독은 초능력 대신 <b>현실적인 범죄 도시</b>를 그려서, 슈퍼히어로 영화를 사회 문제를 다루는 범죄 드라마로 만들었습니다.</p>
+      <div class="grid g3">
+        <div class="card"><div class="ico">💼</div><span class="tag t-red">조직범죄</span><h3>마피아가 움직이는 도시</h3><p>마로니, 감볼 같은 범죄 조직이 돈세탁으로 도시 경제를 쥐고 있습니다. 홍콩의 회계사 라우가 그들의 돈을 관리합니다.</p></div>
+        <div class="card"><div class="ico">🚓</div><span class="tag t-blue">부패</span><h3>믿을 수 없는 경찰</h3><p>경찰 내부에도 마피아에게 돈을 받는 사람이 있습니다. 정직한 경찰 고든조차 누구를 믿어야 할지 모릅니다.</p></div>
+        <div class="card"><div class="ico">🦇</div><span class="tag t-gold">자경단</span><h3>법 밖의 영웅, 배트맨</h3><p>배트맨이 범죄자들을 겁먹게 만들었지만, 흉내 내는 '가짜 배트맨'이 생기고 "가면 쓴 사람이 법 위에 있어도 되나?"라는 비판도 커집니다.</p></div>
+        <div class="card"><div class="ico">⚖️</div><span class="tag t-blue">희망</span><h3>새로운 검사, 하비 덴트</h3><p>새로 뽑힌 지방검사 하비 덴트는 가면 없이 법으로 범죄와 싸웁니다. 시민들은 그를 '고담의 백기사'라 부릅니다.</p></div>
+        <div class="card"><div class="ico">🃏</div><span class="tag t-purple">혼돈</span><h3>규칙이 없는 악당, 조커</h3><p>돈도, 권력도 원하지 않습니다. 그가 원하는 것은 사람들이 믿는 규칙과 질서가 얼마나 쉽게 무너지는지 보여주는 것입니다.</p></div>
+        <div class="card"><div class="ico">👥</div><span class="tag t-gold">시민</span><h3>흔들리는 사람들</h3><p>공포 앞에서 시민들은 "배트맨이 자수하면 끝날 텐데"라며 서로를 의심하고, 누군가를 희생시키고 싶어 합니다.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. PEOPLE -->
+  <section id="people">
+    <div class="wrap">
+      <div class="sec-no">02 · CHARACTERS</div>
+      <h2>세 사람이 만드는 삼각형</h2>
+      <p class="sub">이 영화는 세 인물이 각자 다른 방식으로 도시를 지키거나 무너뜨리려는 이야기입니다. 누가 '규칙'을 어떻게 다루는지에 주목해 보세요.</p>
+
+      <div class="tri card" style="margin-bottom:16px">
+        <svg viewBox="0 0 560 350" role="img" aria-label="배트맨, 하비 덴트, 조커의 관계도">
+          <line x1="280" y1="50" x2="90" y2="270" stroke="var(--line)" stroke-width="2"/>
+          <line x1="280" y1="50" x2="470" y2="270" stroke="var(--line)" stroke-width="2"/>
+          <line x1="90" y1="270" x2="470" y2="270" stroke="var(--line)" stroke-width="2" stroke-dasharray="6 6"/>
+          <circle cx="280" cy="50" r="34" fill="var(--bg2)" stroke="var(--gold)" stroke-width="3"/>
+          <text x="280" y="58" text-anchor="middle" font-size="24">🦇</text>
+          <text x="280" y="108" text-anchor="middle" font-size="16" font-weight="700" fill="var(--text)">배트맨</text>
+          <text x="280" y="128" text-anchor="middle" font-size="12" fill="var(--muted)">법 밖에서, 그러나 '살인은 하지 않는다'</text>
+          <circle cx="90" cy="270" r="34" fill="var(--bg2)" stroke="var(--blue)" stroke-width="3"/>
+          <text x="90" y="278" text-anchor="middle" font-size="24">⚖️</text>
+          <text x="90" y="324" text-anchor="middle" font-size="16" font-weight="700" fill="var(--text)">하비 덴트</text>
+          <text x="90" y="344" text-anchor="middle" font-size="12" fill="var(--muted)">법 안에서 싸우는 희망</text>
+          <circle cx="470" cy="270" r="34" fill="var(--bg2)" stroke="var(--purple)" stroke-width="3"/>
+          <text x="470" y="278" text-anchor="middle" font-size="24">🃏</text>
+          <text x="470" y="324" text-anchor="middle" font-size="16" font-weight="700" fill="var(--text)">조커</text>
+          <text x="470" y="344" text-anchor="middle" font-size="12" fill="var(--muted)">모든 규칙을 비웃는 혼돈</text>
+          <text x="172" y="185" text-anchor="end" font-size="12" fill="var(--muted)">"당신이 고담의 희망"</text>
+          <text x="388" y="185" text-anchor="start" font-size="12" fill="var(--muted)">"너는 나를 완성시켜"</text>
+          <text x="280" y="262" text-anchor="middle" font-size="12" fill="var(--red)">조커가 덴트를 타락시킨다</text>
+        </svg>
+      </div>
+
+      <div class="grid g3">
+        <div class="card person" style="--c:var(--gold)">
+          <h3>🦇 브루스 웨인 / 배트맨</h3>
+          <div class="role">억만장자 · 가면 쓴 자경단</div>
+          <p>부모를 범죄로 잃고 고담을 지키기로 한 인물. 법의 테두리 밖에서 싸우지만 <b>절대 사람을 죽이지 않는다</b>는 원칙을 지킵니다.</p>
+          <ul><li>덴트가 자신을 대신해 '얼굴 있는 영웅'이 되길 바람</li><li>조커를 잡기 위해 도시 전체를 감시하는 장치까지 사용</li></ul>
+        </div>
+        <div class="card person" style="--c:var(--blue)">
+          <h3>⚖️ 하비 덴트 / 투페이스</h3>
+          <div class="role">지방검사 · 고담의 백기사</div>
+          <p>법으로 마피아를 무너뜨리려는 정의로운 검사. 그러나 사랑하는 사람을 잃고 얼굴 반쪽이 불탄 뒤, <b>동전 던지기로 생사를 정하는</b> 투페이스가 됩니다.</p>
+          <ul><li>"정의는 운에 맡겨야 공평하다"는 왜곡된 신념</li><li>시민들의 희망이 무너질 수 있다는 상징</li></ul>
+        </div>
+        <div class="card person" style="--c:var(--purple)">
+          <h3>🃏 조커</h3>
+          <div class="role">정체불명의 범죄자 · 혼돈의 대리인</div>
+          <p>이름도 과거도 알 수 없습니다. 돈더미를 불태우며 "돈이 목적이 아니다"라고 말하고, 시민과 영웅에게 <b>잔인한 선택을 강요하는 사회 실험</b>을 벌입니다.</p>
+          <ul><li>"사람은 위기가 오면 서로를 잡아먹는다"는 인간관</li><li>배트맨에게 원칙을 깨라고 끊임없이 시험</li></ul>
+        </div>
+        <div class="card person" style="--c:var(--green)">
+          <h3>🚓 제임스 고든</h3>
+          <div class="role">경찰 간부 → 경찰청장</div>
+          <p>부패한 경찰 조직 안에서 정직하게 남으려는 경찰. 배트맨과 비공식적으로 손잡고 일합니다.</p>
+        </div>
+        <div class="card person" style="--c:var(--red)">
+          <h3>👩‍⚖️ 레이첼 도스</h3>
+          <div class="role">검사 · 브루스와 하비가 사랑한 사람</div>
+          <p>브루스의 오랜 친구이자 하비의 연인. 조커의 함정으로 목숨을 잃고, 이 사건이 하비를 무너뜨립니다.</p>
+        </div>
+        <div class="card person" style="--c:var(--muted)">
+          <h3>🧪 알프레드 · 루시우스 폭스</h3>
+          <div class="role">브루스의 집사 · 웨인 기업 기술 책임자</div>
+          <p>알프레드는 조커를 이해하는 실마리를 주고, 폭스는 배트맨의 감시 장치가 <b>선을 넘었다</b>고 경고합니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. STORY + SCENES -->
+  <section id="story">
+    <div class="wrap">
+      <div class="sec-no">03 · STORY & SCENES</div>
+      <h2>줄거리 따라가며 주요 장면 보기</h2>
+      <p class="sub">이야기 순서대로 정리했어요. <b>🎬 장면</b> 카드의 화면을 누르면 영상이 재생됩니다. 영상을 보기 전에 '관전 포인트'를 먼저 읽어 보세요.</p>
+
+      <div class="timeline">
+        <div class="act">1막 · 조커의 등장</div>
+
+        <div class="step key">
+          <h3>광대 가면을 쓴 은행 강도단</h3>
+          <p>마피아의 돈이 보관된 은행을 광대 가면 강도단이 털어요. 그런데 강도들은 일이 끝날 때마다 서로를 하나씩 제거합니다. 마지막에 남은 사람이 가면을 벗자, 그가 바로 조커였어요.</p>
+        </div>
+        <div class="scene">
+          <div class="scene-head"><span class="scene-no">🎬 장면 1</span><h4>은행 습격 — 조커의 첫 등장</h4></div>
+          <div class="video" data-id="wXy-ZYf2tfg" data-title="은행 습격 장면"></div>
+          <div class="scene-body">
+            <p class="watch">관전 포인트</p>
+            <ul>
+              <li>강도들은 왜 서로를 의심하고 제거할까요? 누가 이 계획을 세웠을까요?</li>
+              <li>은행 지점장이 "범죄자에게도 명예와 규칙이 있었다"라고 말하는 대목에 주목하세요.</li>
+              <li>조커는 동료조차 믿지 않습니다. 그가 노리는 것은 돈일까요, 다른 무엇일까요?</li>
+            </ul>
+            <div class="q"><b>생각해 보기 ·</b> 범죄 조직에도 '지켜야 할 규칙'이 있다면, 조커는 그 규칙마저 깨는 존재입니다. 규칙이 사라진 사회는 어떤 모습일까요?</div>
+          </div>
+        </div>
+
+        <div class="step key">
+          <h3>조커의 협박 — "내 입이 왜 이렇게 됐는지 알아?"</h3>
+          <p>돈을 빼앗긴 마피아 앞에 조커가 나타나 "배트맨을 없애 줄 테니 돈의 절반을 달라"고 제안해요. 마피아 두목 감볼이 조커의 목에 현상금을 걸자, 조커는 감볼 일당을 찾아가 칼을 들이대고 자기 입이 찢어진 사연을 들려주며 협박합니다. 그리고 살아남은 감볼의 부하들까지 자기 편으로 끌어들여요.</p>
+        </div>
+        <div class="scene">
+          <div class="scene-head"><span class="scene-no">🎬 장면 2</span><h4>조커의 협박 — "Why so serious?"</h4></div>
+          <div class="video" data-id="hN2l13s2haw" data-title="조커의 협박 장면"></div>
+          <div class="scene-body">
+            <p class="watch">관전 포인트</p>
+            <ul>
+              <li>조커는 칼보다 <b>이야기</b>로 상대를 더 두렵게 만듭니다. 왜 협박하면서 굳이 자기 과거를 들려줄까요?</li>
+              <li>조커가 말하는 '입이 찢어진 이유'를 잘 기억해 두세요. <b>장면 3(연회장)</b>에서 그는 같은 질문에 전혀 다른 이야기를 합니다.</li>
+              <li>두목이 사라진 뒤 부하들은 어떻게 행동하나요? 공포 앞에서 조직의 의리는 얼마나 버틸까요?</li>
+            </ul>
+            <div class="q"><b>생각해 보기 ·</b> 조커는 돈도 권력도 아닌 <b>공포</b>로 사람들을 움직입니다. 공포로 만든 복종과 신뢰로 만든 협력은 무엇이 다를까요?</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <h3>배트맨·고든·덴트의 연합</h3>
+          <p>세 사람은 손을 잡고 마피아의 돈줄을 쥔 회계사 라우를 홍콩에서 붙잡아 와요. 라우의 증언으로 수많은 조직원이 한꺼번에 체포되면서 마피아는 궁지에 몰립니다.</p>
+        </div>
+
+        <div class="step">
+          <h3>"배트맨이 가면을 벗을 때까지"</h3>
+          <p>조커는 배트맨이 정체를 밝히고 자수하지 않으면 매일 사람이 죽을 거라고 도시 전체를 협박해요. 공포에 질린 시민들 사이에서 "배트맨이 자수하면 끝날 텐데"라는 목소리가 커집니다.</p>
+        </div>
+
+        <div class="act">2막 · 무너지는 도시</div>
+
+        <div class="step key">
+          <h3>덴트 후원 연회장 습격</h3>
+          <p>조커는 경찰청장과 판사를 노린 데 이어, 브루스가 하비 덴트를 위해 연 후원 파티에 쳐들어와 덴트를 찾아요. 브루스는 덴트를 몰래 숨기고, 조커는 레이첼을 위협합니다.</p>
+        </div>
+        <div class="scene">
+          <div class="scene-head"><span class="scene-no">🎬 장면 3</span><h4>연회장 습격 — 덴트를 찾아온 조커</h4></div>
+          <div class="video" data-id="DyQdCX44wHQ" data-title="연회장 습격 장면"></div>
+          <div class="scene-body">
+            <p class="watch">관전 포인트</p>
+            <ul>
+              <li>조커는 왜 하필 <b>하비 덴트</b>를 노릴까요? 덴트는 시민들에게 어떤 의미인가요?</li>
+              <li>위협 앞에서 파티에 모인 사람들은 어떻게 행동하나요? 맞서는 사람과 피하는 사람을 비교해 보세요.</li>
+              <li>조커가 레이첼에게 들려주는 흉터 이야기를 <b>장면 2</b>에서 한 이야기와 비교해 보세요.</li>
+            </ul>
+            <div class="q"><b>생각해 보기 ·</b> 조커는 흉터 이야기를 할 때마다 내용을 바꿉니다. 그는 왜 자신의 과거를 정확히 밝히지 않을까요?</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <h3>"내가 배트맨이다" — 덴트의 거짓 자수</h3>
+          <p>희생자가 늘자 덴트는 스스로 배트맨이라고 거짓 자백해 조커를 끌어냅니다. 조커는 결국 붙잡히지만, 사실은 일부러 잡힌 것이었어요.</p>
+        </div>
+        <div class="step">
+          <h3>두 개의 주소, 하나의 선택</h3>
+          <p>조커는 레이첼과 덴트를 서로 다른 장소에 가둬 두고, 배트맨에게 한 사람만 구할 수 있게 해요. 레이첼은 목숨을 잃고, 덴트는 얼굴 반쪽이 불탄 채 살아남습니다.</p>
+        </div>
+
+        <div class="step key">
+          <h3>병원 폭파 — 백기사가 무너지다</h3>
+          <p>조커는 "배트맨의 정체를 폭로하려는 사람을 1시간 안에 죽이지 않으면 병원을 폭파하겠다"고 협박해요. 경찰이 병원 대피에 매달린 사이, 조커는 간호사로 변장해 덴트의 병실에 들어가 그의 분노를 부추깁니다. 그리고 병원을 폭파합니다.</p>
+        </div>
+        <div class="scene">
+          <div class="scene-head"><span class="scene-no">🎬 장면 4</span><h4>병원 폭파 — 투페이스의 탄생</h4></div>
+          <div class="video" data-id="xXt7PiFDtQs" data-title="병원 폭파 장면"></div>
+          <div class="scene-body">
+            <p class="watch">관전 포인트</p>
+            <ul>
+              <li>조커는 덴트에게 "나는 계획 같은 건 없다"고 말합니다. 정말 그럴까요?</li>
+              <li>조커가 덴트에게 건넨 것은 무엇이고, 덴트는 그것으로 무엇을 결정하게 되나요?</li>
+              <li>병원 폭파 협박은 시민들이 서로에게 어떤 행동을 하도록 몰아붙이나요?</li>
+            </ul>
+            <div class="q"><b>생각해 보기 ·</b> 가장 정의로웠던 사람이 왜 이렇게 쉽게 무너졌을까요? 정의는 개인의 의지만으로 지킬 수 있을까요, 제도와 공동체의 뒷받침이 필요할까요?</div>
+          </div>
+        </div>
+
+        <div class="act">3막 · 마지막 실험</div>
+
+        <div class="step">
+          <h3>두 척의 배 — 조커의 사회 실험</h3>
+          <p>시민이 탄 배와 죄수가 탄 배에 폭탄을 설치하고, 서로 상대 배의 기폭 장치를 줍니다. 자정까지 아무도 누르지 않으면 두 배 모두 폭파된다는 조건이에요. 두 배의 사람들은 결국 누구도 버튼을 누르지 않았어요.</p>
+        </div>
+        <div class="step">
+          <h3>도시 전체를 엿듣는 감시 장치</h3>
+          <p>배트맨은 조커를 찾으려고 시민들의 휴대전화를 이용해 도시 전체를 감시하는 장치를 만듭니다. 루시우스 폭스는 "이건 잘못된 일"이라며 이번 한 번만 쓰고 장치를 없애겠다는 조건으로 돕습니다.</p>
+        </div>
+        <div class="step key">
+          <h3>고귀한 거짓말</h3>
+          <p>투페이스가 된 덴트는 복수에 나섰다가 목숨을 잃어요. 덴트의 타락이 알려지면 그가 감옥에 넣은 범죄자들이 풀려나고 시민의 희망도 무너질 것입니다. 배트맨은 덴트의 죄를 <b>자신이 뒤집어쓰고</b> 쫓기는 신세가 되기로 합니다. 고든은 진실을 알면서도 그 거짓을 지킵니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. QUOTES -->
+  <section id="quotes">
+    <div class="wrap">
+      <div class="sec-no">04 · QUOTES</div>
+      <h2>세계관을 압축한 명대사</h2>
+      <p class="sub">대사 하나에 인물의 가치관이 담겨 있어요. 누구의 말에 가장 공감이 가나요?</p>
+      <div class="grid g2">
+        <div class="quote"><blockquote>"영웅으로 죽든가, 아니면 오래 살아남아 스스로 악당이 되는 걸 보게 되지."</blockquote><cite>— 하비 덴트</cite><p>권력과 정의는 시간이 지나면 변질될 수 있다는 경고. 덴트 자신의 운명을 예고합니다.</p></div>
+        <div class="quote"><blockquote>"어떤 사람들은 그냥 세상이 불타는 걸 보고 싶어 해요."</blockquote><cite>— 알프레드</cite><p>돈이나 권력으로 설명할 수 없는 악, 조커를 이해하는 열쇠입니다.</p></div>
+        <div class="quote"><blockquote>"Why so serious?" (왜 그렇게 심각해?)</blockquote><cite>— 조커</cite><p>모든 질서와 가치를 농담처럼 비웃는 조커의 태도를 보여줍니다.</p></div>
+        <div class="quote"><blockquote>"그는 고담이 누릴 자격이 있는 영웅이지만, 지금 필요한 영웅은 아니야. … 침묵의 수호자, 어둠의 기사."</blockquote><cite>— 고든</cite><p>영화 제목 '다크 나이트'의 의미. 진정한 영웅은 칭찬받지 못해도 옳은 일을 하는 사람일까요?</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. ETHICS -->
+  <section id="ethics">
+    <div class="wrap">
+      <div class="sec-no">05 · ETHICS</div>
+      <h2>고담이 던지는 윤리적 질문</h2>
+      <p class="sub">캠프에서 우리가 함께 토론할 질문들의 바탕이 되는 쟁점이에요.</p>
+      <div class="grid g2">
+        <div class="card theme-card">
+          <h3>⚖️ 다수를 위한 희생은 정당한가?</h3>
+          <p>조커는 "배트맨 한 명만 자수하면 모두가 산다"는 선택지를 내밉니다.</p>
+          <div class="vs"><div><b>공리주의</b>최대 다수의 최대 행복. 결과가 좋다면 소수의 희생도 감수할 수 있다.</div><div><b>의무론</b>사람은 수단이 아닌 목적. 결과와 상관없이 지켜야 할 원칙이 있다.</div></div>
+          <p class="ask">→ 배트맨은 자수해야 했을까?</p>
+        </div>
+        <div class="card theme-card">
+          <h3>🦇 법 밖의 정의, 자경단은 정당한가?</h3>
+          <p>배트맨은 범죄를 줄였지만 누구에게도 선출되거나 감시받지 않습니다.</p>
+          <div class="vs"><div><b>찬성</b>법과 경찰이 무력할 때, 시민을 지킬 다른 방법이 필요하다.</div><div><b>반대</b>가면 쓴 개인이 법 위에 서면, 누구든 '정의'를 내세워 폭력을 쓸 수 있다.</div></div>
+          <p class="ask">→ 정의는 누가, 어떤 절차로 실현해야 할까?</p>
+        </div>
+        <div class="card theme-card">
+          <h3>📡 안전을 위한 감시는 어디까지?</h3>
+          <p>배트맨은 조커를 잡으려고 도시 전체의 통화를 엿듣습니다.</p>
+          <div class="vs"><div><b>안전</b>테러를 막기 위해 일시적인 감시는 불가피하다.</div><div><b>자유</b>한 번 허용된 감시는 남용될 수 있고, 사생활은 기본권이다.</div></div>
+          <p class="ask">→ 오늘날 CCTV, 위치 추적과 무엇이 같고 다를까?</p>
+        </div>
+        <div class="card theme-card">
+          <h3>🤥 공동체를 위한 거짓말은 허용될까?</h3>
+          <p>배트맨과 고든은 덴트의 범죄를 숨겨 시민의 희망을 지킵니다.</p>
+          <div class="vs"><div><b>허용</b>플라톤의 '고귀한 거짓말'. 사회 질서를 위해 필요한 거짓도 있다.</div><div><b>불허</b>시민은 진실을 알 권리가 있다. 거짓 위의 질서는 언젠가 무너진다.</div></div>
+          <p class="ask">→ 언론인이라면 이 사실을 보도해야 할까?</p>
+        </div>
+        <div class="card theme-card">
+          <h3>🚢 인간은 본래 선한가, 악한가?</h3>
+          <p>조커는 위기가 오면 사람들이 서로를 죽일 거라 믿었지만, 두 배의 사람들은 버튼을 누르지 않았습니다.</p>
+          <div class="vs"><div><b>홉스</b>자연 상태는 '만인의 만인에 대한 투쟁'. 강한 통제가 필요하다.</div><div><b>루소·맹자</b>인간에게는 본래 선한 마음이 있다. 신뢰가 공동체를 지킨다.</div></div>
+          <p class="ask">→ 두 배의 선택은 무엇을 보여줄까?</p>
+        </div>
+        <div class="card theme-card">
+          <h3>🪙 운에 맡기는 것이 공정한가?</h3>
+          <p>투페이스는 동전 던지기만이 공평한 정의라고 말합니다.</p>
+          <div class="vs"><div><b>운의 평등</b>누구에게나 같은 확률이니 차별은 없다.</div><div><b>책임과 이성</b>정의는 근거와 책임 있는 판단에서 나온다. 운은 판단을 포기한 것이다.</div></div>
+          <p class="ask">→ 롤스의 '무지의 베일'과 동전 던지기는 어떻게 다를까?</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. ROLES -->
+  <section id="roles">
+    <div class="wrap">
+      <div class="sec-no">06 · YOUR ROLE</div>
+      <h2>내 역할로 영화 보기</h2>
+      <p class="sub">캠프에서 맡은 역할의 눈으로 장면을 다시 보세요. 1차시 딜레마 투표에서 내 역할이 어떤 선택을 할지 미리 생각해 두면 좋아요.</p>
+      <div class="table-wrap">
+        <table class="roles">
+          <thead><tr><th>역할</th><th>주목할 장면</th><th>내가 던질 질문</th></tr></thead>
+          <tbody>
+            <tr><td>🏙️ 고담 시민</td><td>"가면을 벗어라" 협박, 두 척의 배</td><td>공포 속에서 시민은 누구를 믿고, 어떤 선택을 해야 할까?</td></tr>
+            <tr><td>🚓 고담 경찰</td><td>은행 습격, 병원 폭파</td><td>부패한 조직 안에서 정직한 경찰은 어떻게 시민을 지킬 수 있을까?</td></tr>
+            <tr><td>🏛️ 시 행정가</td><td>병원 폭파(대피), 두 척의 배</td><td>위기 상황에서 한정된 자원과 인력을 어디에 먼저 써야 할까?</td></tr>
+            <tr><td>📰 언론인</td><td>조커의 협박(흉터 이야기), 고귀한 거짓말</td><td>공포를 키우지 않으면서 진실을 알리는 보도란 무엇일까?</td></tr>
+            <tr><td>⚖️ 법조인</td><td>연회장 습격, 덴트의 거짓 자수</td><td>법을 지키며 정의를 실현하는 것과 결과를 위해 규칙을 넘는 것 사이의 경계는?</td></tr>
+            <tr><td>🧪 의료·과학자</td><td>병원 폭파, 감시 장치</td><td>기술과 의료는 누구를 위해, 어디까지 쓰여야 할까?</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>연합 캠프 「고담시의 선택」 · 수업용 비영리 교육 자료</p>
+    <p>영상은 YouTube에 공개된 영상을 연결해 보여줍니다. 영화 저작권은 해당 권리자에게 있습니다.</p>
+  </div>
+</footer>
+
+<script>
+// 영상: 썸네일을 먼저 보여주고, 누르면 그때 플레이어를 불러옵니다 (학교 와이파이 부담 줄이기)
+document.querySelectorAll('.video').forEach(function(box){
+  var id = box.dataset.id, title = box.dataset.title;
+  box.innerHTML =
+    '<img loading="lazy" alt="' + title + ' 썸네일" src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" onerror="this.remove()">' +
+    '<div class="play"><i>▶</i><span>눌러서 영상 보기</span></div>';
+  box.setAttribute('role','button');
+  box.setAttribute('tabindex','0');
+  box.setAttribute('aria-label', title + ' 재생');
+  function load(){
+    if (box.dataset.loaded) return;
+    box.dataset.loaded = '1';
+    box.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + id +
+      '?autoplay=1&rel=0&playsinline=1" title="' + title +
+      '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+  }
+  box.addEventListener('click', load);
+  box.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); load(); } });
+  var link = document.createElement('a');
+  link.className = 'ext';
+  link.href = 'https://www.youtube.com/watch?v=' + id;
+  link.target = '_blank'; link.rel = 'noopener';
+  link.textContent = '↗ 영상이 재생되지 않으면 YouTube에서 보기';
+  box.parentElement.querySelector('.scene-body').appendChild(link);
+});
+
+// 테마 전환
+(function(){
+  var btn = document.getElementById('themeBtn'), root = document.documentElement;
+  var saved = null; try { saved = localStorage.getItem('gotham-theme'); } catch(e){}
+  if (saved) root.dataset.theme = saved;
+  function sync(){ btn.textContent = root.dataset.theme === 'light' ? '☾' : '☀︎'; }
+  sync();
+  btn.addEventListener('click', function(){
+    root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
+    try { localStorage.setItem('gotham-theme', root.dataset.theme); } catch(e){}
+    sync();
+  });
+})();
+
+// 목차 현재 위치 표시
+(function(){
+  var links = [].slice.call(document.querySelectorAll('#toc a'));
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting) links.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id); });
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  document.querySelectorAll('main section').forEach(function(s){ obs.observe(s); });
+})();
+</script>
+</body>
+</html>
