@@ -23,6 +23,13 @@ const Mock = (() => {
   async function post(action, p) {
     await wait(120);
     const db = load();
+    if (action === 'register') {
+      // 미리보기에서는 실제 명렬표가 없으므로 어떤 학번·이름으로도 들어갈 수 있게 허용
+      const sid = String(p.studentId || '').trim(), nm = String(p.name || '').trim();
+      const st = db.Students.find((x) => String(x.studentId) === sid);
+      if (st && !st.cardId) st.name = nm;
+      if (!st && /^\d{3,10}$/.test(sid) && nm) db.Students.push({ studentId: sid, name: nm, gender: p.gender || '', cardId: '', roleName: '', groupId: '', seat: '', registeredAt: '' });
+    }
     const out = GothamCore.handle(db, action, p);
     if (out.changed.length) save(db);
     return out.result;
